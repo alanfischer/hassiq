@@ -1,0 +1,15 @@
+<resources>
+    <properties>
+        <property id="host" type="string">home:8123</property>
+    </properties>
+
+    <strings>
+       <string id="host_title">Host</string>
+    </strings>
+
+    <settings>
+        <setting propertyKey="@Properties.host" title="@Strings.host_title">
+            <settingConfig type="alphaNumeric" />
+        </setting>
+    </settings>
+</resources>
