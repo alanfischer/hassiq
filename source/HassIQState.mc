@@ -7,6 +7,7 @@ class HassIQState {
 	var updateCallback = null;
 	var state = 0;
 	var entities = null;
+	var selected = null;
 	var domains = ["sun","light","switch","remote","automation"];
 	var host = null;
 
@@ -20,7 +21,7 @@ class HassIQState {
 
 		for (var i=0; i<size; ++i) {
 			var entity = entities[i];
-			stored[i] = { "entity_id" => entity[:entity_id], "name" => entity[:name], "state" => entity[:state], "selected" => entity[:selected] };
+			stored[i] = { "entity_id" => entity[:entity_id], "name" => entity[:name], "state" => entity[:state] };
 		}
 		
 		return stored;
@@ -40,7 +41,7 @@ class HassIQState {
 		
 		for (var i=0; i<size; ++i) {
 			var store = stored[i];
-			entities[i] = { :entity_id => store["entity_id"], :name => store["name"], :state => store["state"], :selected => store["selected"] };
+			entities[i] = { :entity_id => store["entity_id"], :name => store["name"], :state => store["state"] };
 			updateEntityState(entities[i], entities[i][:state]);
 		}
 	}
@@ -70,7 +71,7 @@ class HassIQState {
 			self.state = 1;
 			self.entities = buildEntities(data, entities);
 		} else {
-			System.println("Failed to load\nError: " + responseCode.toString());
+			// System.println("Failed to load\nError: " + responseCode.toString());
 			self.state = -1;
 		}
 		if (self.updateCallback) {
@@ -97,13 +98,13 @@ class HassIQState {
 
 	function onServiceReceive(responseCode, data) {
 		if (responseCode == 200) {
-			System.println("Received data:"+data);
+			// System.println("Received data:"+data);
 			var size = data.size();
 			for (var i=0; i<size; ++i) {
 				buildEntity(data[i], entities);
 			}
 		} else {
-			System.println("Failed to load\nError: " + responseCode.toString());
+			// System.println("Failed to load\nError: " + responseCode.toString());
 		}
 		if (self.serviceCallback) {
 			self.serviceCallback.invoke(self);
@@ -140,8 +141,6 @@ class HassIQState {
 		if (hid==true || inArray(domains, getEntityDomain(item))==false) {
 			return null;
 		}
-
-		System.println(item);
 
 		var entity = null;
 		if (previous) {

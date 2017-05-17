@@ -22,9 +22,8 @@ class HassIQView extends Ui.View {
    	}
 
 	function onUpdate(dc) {
-		System.println("onUpdate");
-		
-		var selected = null;
+		// System.println("onUpdate");
+
 		if (state.entities) {
 			var size = state.entities.size();
 			var layout = new [size];
@@ -40,10 +39,6 @@ class HassIQView extends Ui.View {
 					drawable.setLocation(Ui.LAYOUT_HALIGN_CENTER, l * height);
 					layout[l] = drawable;
 					l++;
-
-					if (entity[:selected]) {
-						selected = entity;
-					}
 				}
 				else {
 					drawable.setLocation(Ui.LAYOUT_HALIGN_CENTER, Ui.LAYOUT_VALIGN_START);
@@ -56,8 +51,8 @@ class HassIQView extends Ui.View {
 		
 		View.onUpdate(dc);
 		
-		if (selected) {
-			var drawable = selected[:drawable];
+		if (state.selected != null) {
+			var drawable = state.selected[:drawable];
 			var x = (dc.getWidth() - drawable.width)/2;
    			var y = drawable.locY;
 			dc.drawRectangle(x, y, drawable.width, drawable.height);

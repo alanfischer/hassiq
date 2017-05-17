@@ -9,16 +9,13 @@ class HassIQMenuDelegate extends Ui.MenuInputDelegate {
 	function initialize(parent, visible) {
 		self.parent = parent;
 		self.visible = visible;
-		for (var i=0; i<visible.size(); ++i) {
-			visible[i][:selected] = false;
-		}
 		MenuInputDelegate.initialize();
 	}
 
 	function onMenuItem(item) {
 		for (var i=0; i<symbols.size(); ++i) {
 			if (symbols[i] == item) {
-				visible[i][:selected] = true;
+				parent.state.selected = visible[i];
 				parent.timer = new Timer.Timer();
 				parent.timer.start(parent.method(:onSelect), 50, false);
 				break;
@@ -71,7 +68,7 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 
 		// Reorder visibles with selected as first
 		for (var i=0; i<size; ++i) {
-			if (visible[i][:selected]) {
+			if (state.selected == visible[i]) {
 				var ordered = new [size];
 				for (var j=0; j<size; ++j) {
 					ordered[j] = visible[(i+j) % size];
@@ -82,7 +79,6 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 		}
 
 		var menu = new Ui.Menu();
-		var lookup = {};
 		menu.setTitle("Trigger");
 		for (var i=0; i<size; ++i) {
 			menu.addItem(visible[i][:name], HassIQMenuDelegate.symbols[i]);
@@ -93,9 +89,11 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 	}
 
 	function onSelect() {
+		timer = null;
+
 		var visible = getVisibleEntities();
 		for (var i=0; i<visible.size(); ++i) {
-			if (visible[i][:selected]) {
+			if (state.selected == visible[i]) {
 				callEntityService(visible[i]);
 				break;
 			}
@@ -118,11 +116,13 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 		Ui.pushView(progressBar, new HassIQProgressBarDelegate(self), Ui.SLIDE_DOWN);
 		state.callService(domain, service, entity, method(:onServiceCalled));
 	}
-	
+
 	function onServiceCalled(state) {
 		if (progressBar != null) {
 			progressBar = null;
-			Ui.popView(Ui.SLIDE_UP);
+			try {
+				Ui.popView(Ui.SLIDE_UP);
+			} catch(ex) { }
 		}
 		Ui.requestUpdate();
 	}
