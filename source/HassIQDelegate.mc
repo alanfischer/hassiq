@@ -54,12 +54,12 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 		var v = 0;
 		for (var i=0; i<size; ++i) {
 			var entity = state.entities[i];
-			if (entity[:drawable]!=null && entity[:drawable].locY!=Ui.LAYOUT_VALIGN_START) {
+			if (entity[:drawable] != null && entity[:drawable].locY != Ui.LAYOUT_VALIGN_START) {
 				visible[v]=entity;
 				v++;
 			}
 		}
-		return visible.slice(0,v);
+		return visible.slice(0, v);
 	}
 
 	function onMenu() {

@@ -26,7 +26,6 @@ class HassIQApp extends App.AppBase {
 		onSettingsChanged();
 	}
 
-	// onStop() is called when your application is exiting
 	function onStop(state) {
 		setProperty("state", self.state.save());
 
@@ -47,6 +46,6 @@ class HassIQApp extends App.AppBase {
 		
 		onSettingsChanged();
 		
-		return [ view, delegate ];
+		return [view, delegate];
 	}
 }

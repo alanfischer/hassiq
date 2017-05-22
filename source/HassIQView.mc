@@ -6,17 +6,16 @@ class HassIQView extends Ui.View {
 
 	function initialize(state) {
 		self.state = state;
+
 		View.initialize();
 	}
 
 	function onLayout(dc) {
 		onStateUpdated(state);
-	}
 
-	function onShow() {
 		self.state.update(method(:onStateUpdated));
 	}
-	
+
 	function onStateUpdated(state) {
 		Ui.requestUpdate();
    	}
@@ -32,7 +31,7 @@ class HassIQView extends Ui.View {
 			for(var i=0; i<size; ++i) {
 				var entity = state.entities[i];
 				var drawable = entity[:drawable];
-				
+
 				if (drawable == null) { continue; }
 
 				if (true /*Show all*/) {
@@ -48,9 +47,9 @@ class HassIQView extends Ui.View {
 		} else {
 			setLayout(Rez.Layouts.MainLayout(dc));
 		}
-		
+
 		View.onUpdate(dc);
-		
+
 		if (state.selected != null) {
 			var drawable = state.selected[:drawable];
 			var x = (dc.getWidth() - drawable.width)/2;
@@ -67,8 +66,5 @@ class HassIQView extends Ui.View {
 		}
 		dc.setColor(color, color);
 		dc.fillRectangle(0, dc.getHeight() - 4, dc.getWidth(), 4);
-	}
-
-	function onHide() {
 	}
 }

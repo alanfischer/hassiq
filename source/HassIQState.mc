@@ -8,11 +8,18 @@ class HassIQState {
 	var state = 0;
 	var entities = null;
 	var selected = null;
-	var domains = ["sun","light","switch","remote","automation"];
 	var host = null;
 
+	static var domains = ["sun","light","switch","remote","automation"];
+	static var on = "on";
+	static var off = "off";
+
+	function setHost(host) {
+		self.host = host;
+	}
+
 	function save() {
-		if (entities==null) {
+		if (entities == null) {
 			return null;
 		}
 		
@@ -27,10 +34,6 @@ class HassIQState {
 		return stored;
 	}
 
-	function setHost(host) {
-		self.host=host;
-	}
-	
 	function load(stored) {
 		if (!(stored instanceof Array)) {
 			return;
@@ -51,7 +54,7 @@ class HassIQState {
 	}
 
 	function update(callback) {
-		if (self.updateCallback) {
+		if (self.updateCallback != null) {
 			return false;
 		}
 
@@ -69,22 +72,36 @@ class HassIQState {
 		if (responseCode == 200) {
 			// System.println("Received data:"+data);
 			self.state = 1;
+			var selected_id = self.selected != null ? self.selected[:entity_id] : null;
+			self.selected = null;
+
 			self.entities = buildEntities(data, entities);
+
+			if (selected_id != null) {
+				var size = entities.size();
+				for (var i=0; i<size; ++i) {
+					if (selected_id.equals(entities[i][:entity_id])) {
+						self.selected = entities[i];
+						break;
+					}
+				}
+			}
 		} else {
 			// System.println("Failed to load\nError: " + responseCode.toString());
 			self.state = -1;
 		}
-		if (self.updateCallback) {
+
+		if (self.updateCallback != null) {
 			self.updateCallback.invoke(self);
 			self.updateCallback = null;
 		}
 	}
-	
+
 	function callService(domain, service, entity, callback) {
-		if(self.serviceCallback) {
+		if(self.serviceCallback != null) {
 			return false;
 		}
-	
+
 		self.serviceCallback = callback;
 
 		Comm.makeWebRequest(api() + "/services/" + domain + "/" + service,
@@ -106,7 +123,8 @@ class HassIQState {
 		} else {
 			// System.println("Failed to load\nError: " + responseCode.toString());
 		}
-		if (self.serviceCallback) {
+
+		if (self.serviceCallback != null) {
 			self.serviceCallback.invoke(self);
 			self.serviceCallback = null;
 		}
@@ -121,13 +139,27 @@ class HassIQState {
 			else {
 				drawable = new Ui.Bitmap({:rezId=>Rez.Drawables.moon});
 			}
+			entity[:drawable] = drawable;
 		} else {
+			if (state.equals(on)) {
+				state = on;
+			}
+			else if (state.equals(off)) {
+				state = off;
+			}
+
 			var name = entity[:name] ? entity[:name] : entity[:entity_id];
-			var color = state.equals("on") ? Gfx.COLOR_WHITE : Gfx.COLOR_LT_GRAY;
-			drawable = new Ui.Text({:text=>name, :font=>Gfx.FONT_TINY, :locX =>Ui.LAYOUT_HALIGN_CENTER, :locY=>0, :color=>color});
+			var color = state.equals(on) ? Gfx.COLOR_WHITE : Gfx.COLOR_LT_GRAY;
+			if (entity[:drawable]) {
+				entity[:drawable].setText(name);
+				entity[:drawable].setColor(color);
+			}
+			else {
+				drawable = new Ui.Text({:text=>name, :font=>Gfx.FONT_TINY, :locX =>Ui.LAYOUT_HALIGN_CENTER, :locY=>0, :color=>color});
+				entity[:drawable] = drawable;
+			}
 		}
-		
-		entity[:drawable] = drawable;
+
 		entity[:state] = state;
 	}
 
@@ -137,13 +169,13 @@ class HassIQState {
 		var attributes = item["attributes"];
 		var name = attributes["friendly_name"];
 		var hid = attributes["hidden"];
-		
-		if (hid==true || inArray(domains, getEntityDomain(item))==false) {
+
+		if (hid == true || inArray(domains, getEntityDomain(item)) == false) {
 			return null;
 		}
 
 		var entity = null;
-		if (previous) {
+		if (previous != null) {
 			for (var j=0; j<previous.size(); ++j) {
 				if (previous[j][:entity_id].equals(entity_id)) {
 					entity = previous[j];
@@ -156,7 +188,7 @@ class HassIQState {
 		if (!state.equals(entity[:state])) {
 			updateEntityState(entity, state);
 		}
-		
+
 		return entity;
 	}
 
@@ -167,14 +199,14 @@ class HassIQState {
 		for (var i=0; i<data_size; ++i) {
 			var entity = buildEntity(data[i], previous);
 			
-			if (entity==null) {
+			if (entity == null) {
 				continue;
 			}
 
 			entities[size] = entity;
 			size++;
 		}
-		
+
 		var sorted = new [size];
 		var s = 0;
 		for (var p=0; p<2; ++p) {
@@ -200,12 +232,12 @@ class HassIQState {
 
 	function getEntityDomain(entity) {
 		var entity_id = entity[:entity_id] ? entity[:entity_id] : entity["entity_id"];
-		return split(entity_id,".")[0];
+		return split(entity_id, ".")[0];
 	}
 
 	function split(s, sep) {
 		var tokens = [];
-	
+
 		var found = s.find(sep);
 		while (found != null) {
 			var token = s.substring(0, found);
@@ -213,12 +245,12 @@ class HassIQState {
 			s = s.substring(found + sep.length(), s.length());
 			found = s.find(sep);
 		}
-	
+
 		tokens.add(s);
-	
+
 		return tokens;
 	}
-		
+
 	function inArray(a, item) {
 		var size = a.size();
 		for (var i=0; i<size; ++i) {
@@ -228,7 +260,7 @@ class HassIQState {
 		}
 		return false;
 	}
-		
+/*
 	(:test)
 	function assert(condition) { if(!condition) { oh_no(); }}
 	(:test)
@@ -253,4 +285,5 @@ class HassIQState {
 		assert(entities.size() == 1);
 		assert(getEntityDomain(entities[0]).equals("test"));
 	}
+*/
 }
