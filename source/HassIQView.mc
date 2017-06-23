@@ -34,14 +34,9 @@ class HassIQView extends Ui.View {
 
 				if (drawable == null) { continue; }
 
-				if (true /*Show all*/) {
-					drawable.setLocation(Ui.LAYOUT_HALIGN_CENTER, l * height);
-					layout[l] = drawable;
-					l++;
-				}
-				else {
-					drawable.setLocation(Ui.LAYOUT_HALIGN_CENTER, Ui.LAYOUT_VALIGN_START);
-				}
+				drawable.setLocation(Ui.LAYOUT_HALIGN_CENTER, l * height);
+				layout[l] = drawable;
+				l++;
 			}
    			setLayout(layout.slice(0,l));
 		} else {

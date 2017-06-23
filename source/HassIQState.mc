@@ -10,9 +10,20 @@ class HassIQState {
 	var selected = null;
 	var host = null;
 
-	static var domains = ["sun","light","switch","remote","automation"];
+	static var domains = ["light","switch","remote","automation"];
+	static var restrict = null;
 	static var on = "on";
 	static var off = "off";
+
+	function initialize() {
+		var length = domains.size();
+		if (length > 0) {
+			restrict = domains[0];
+			for (var i=1; i<length; ++i) {
+				restrict += "," + domains[i];
+			}
+		}
+	}
 
 	function setHost(host) {
 		self.host = host;
@@ -60,7 +71,7 @@ class HassIQState {
 
 		self.updateCallback = callback;
 
-		Comm.makeWebRequest(api() + "/states", null, 
+		Comm.makeWebRequest(api() + "/states?restrict=" + restrict, null, 
 			{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => 
 				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json" }
 			}, method(:onUpdateReceive) );
@@ -104,7 +115,7 @@ class HassIQState {
 
 		self.serviceCallback = callback;
 
-		Comm.makeWebRequest(api() + "/services/" + domain + "/" + service,
+		Comm.makeWebRequest(api() + "/services/" + domain + "/" + service + "?restrict=" + restrict,
 			{ "entity_id" => entity[:entity_id] },
 			{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => 
 				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json" }
@@ -260,7 +271,7 @@ class HassIQState {
 		}
 		return false;
 	}
-/*
+
 	(:test)
 	function assert(condition) { if(!condition) { oh_no(); }}
 	(:test)
@@ -285,5 +296,4 @@ class HassIQState {
 		assert(entities.size() == 1);
 		assert(getEntityDomain(entities[0]).equals("test"));
 	}
-*/
 }

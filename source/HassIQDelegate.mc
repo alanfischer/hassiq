@@ -3,19 +3,18 @@ using Toybox.WatchUi as Ui;
 
 class HassIQMenuDelegate extends Ui.MenuInputDelegate {
 	var parent;
-	var visible;
 	static var symbols=[:s0,:s1,:s2,:s3,:s4,:s5,:s6,:s7,:s8,:s9,:s10,:s11,:s12,:s13,:s14,:s15,:s16];
 
-	function initialize(parent, visible) {
+	function initialize(parent) {
 		self.parent = parent;
-		self.visible = visible;
 		MenuInputDelegate.initialize();
 	}
 
 	function onMenuItem(item) {
-		for (var i=0; i<symbols.size(); ++i) {
+		var size = symbols.size();
+		for (var i=0; i<size; ++i) {
 			if (symbols[i] == item) {
-				parent.state.selected = visible[i];
+				parent.state.selected = parent.state.entities[i];
 				parent.timer = new Timer.Timer();
 				parent.timer.start(parent.method(:onSelect), 50, false);
 				break;
@@ -48,53 +47,25 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 		Ui.BehaviorDelegate.initialize();
 	}
 
-	function getVisibleEntities() {
-		var size = state.entities.size();
-		var visible = new [size];
-		var v = 0;
-		for (var i=0; i<size; ++i) {
-			var entity = state.entities[i];
-			if (entity[:drawable] != null && entity[:drawable].locY != Ui.LAYOUT_VALIGN_START) {
-				visible[v]=entity;
-				v++;
-			}
-		}
-		return visible.slice(0, v);
-	}
-
 	function onMenu() {
-		var visible = getVisibleEntities();
-		var size = visible.size();
-
-		// Reorder visibles with selected as first
-		for (var i=0; i<size; ++i) {
-			if (state.selected == visible[i]) {
-				var ordered = new [size];
-				for (var j=0; j<size; ++j) {
-					ordered[j] = visible[(i+j) % size];
-				}
-				visible = ordered;
-				break;
-			}
-		}
-
 		var menu = new Ui.Menu();
 		menu.setTitle("Trigger");
+		var size = state.entities.size();
 		for (var i=0; i<size; ++i) {
-			menu.addItem(visible[i][:name], HassIQMenuDelegate.symbols[i]);
+			menu.addItem(state.entities[i][:name], HassIQMenuDelegate.symbols[i]);
 		}
 
-		Ui.pushView(menu, new HassIQMenuDelegate(self, visible), Ui.SLIDE_UP);
+		Ui.pushView(menu, new HassIQMenuDelegate(self), Ui.SLIDE_UP);
 		return true;
 	}
 
 	function onSelect() {
 		timer = null;
 
-		var visible = getVisibleEntities();
-		for (var i=0; i<visible.size(); ++i) {
-			if (state.selected == visible[i]) {
-				callEntityService(visible[i]);
+		var size = state.entities.size();
+		for (var i=0; i<size; ++i) {
+			if (state.selected == state.entities[i]) {
+				callEntityService(state.entities[i]);
 				break;
 			}
 		}
