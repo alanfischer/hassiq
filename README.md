@@ -10,5 +10,5 @@ Steps to install:
 
 1. Copy custom_components/api.py into your .homeassistant/custom_components directory.
 2. Create a group in home assistant called group.hassiq  This contains all the entities you wish to show on the HassIQ app.
-3. Build HassIQ.prg and copy to the Apps directory on your Garmin.
-
+3. Edit HassIQApp.mc and change the host to point to your homeassistant address.
+4. Build HassIQ.prg and copy to the Apps directory on your Garmin.
