@@ -6,11 +6,14 @@ class HassIQState {
 	var serviceCallback = null;
 	var updateCallback = null;
 	var state = 0;
+	var visible_ids = null;
 	var entities = null;
 	var selected = null;
 	var host = null;
 
-	static var domains = ["light","switch","remote","automation"];
+	static var visibility_group = "group.hassiq";
+	// Add separate end token, since ciq always appends a ? to the end, it doesn't pollute our real data
+	static var domains = [visibility_group,"light","switch","remote","end"];
 	static var restrict = null;
 	static var on = "on";
 	static var off = "off";
@@ -70,7 +73,6 @@ class HassIQState {
 		}
 
 		self.updateCallback = callback;
-
 		Comm.makeWebRequest(api() + "/states?restrict=" + restrict, null, 
 			{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => 
 				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json" }
@@ -181,7 +183,11 @@ class HassIQState {
 		var name = attributes["friendly_name"];
 		var hid = attributes["hidden"];
 
-		if (hid == true || inArray(domains, getEntityDomain(item)) == false) {
+		if (entity_id.equals(visibility_group)) {
+			visible_ids = attributes["entity_id"];
+		}
+
+		if (hid == true) {
 			return null;
 		}
 
@@ -216,6 +222,19 @@ class HassIQState {
 
 			entities[size] = entity;
 			size++;
+		}
+
+		if (visible_ids != null) {
+			var filtered_entities = new [size];
+			var s = 0;
+			for (var i=0; i<size; ++i) {
+				if (visible_ids.indexOf(entities[i][:entity_id]) >= 0) {
+					filtered_entities[s] = entities[i];
+					s++;
+				}
+			}
+			entities = filtered_entities;
+			size = s;
 		}
 
 		var sorted = new [size];
