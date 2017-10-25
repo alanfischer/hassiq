@@ -5,6 +5,7 @@ class HassIQApp extends App.AppBase {
 	var view;
 	var delegate;
 	var host = "home:8123";
+	var password = null;
 
 	function initialize() {
 		AppBase.initialize();
@@ -38,6 +39,7 @@ class HassIQApp extends App.AppBase {
 
 	function onSettingsChanged() {
 		state.setHost(host ? host : getProperty("host"));
+		state.setPassword(password ? password : getProperty("password"));
 	}
 
 	function getInitialView() {
