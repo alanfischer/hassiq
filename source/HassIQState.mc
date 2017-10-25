@@ -10,6 +10,7 @@ class HassIQState {
 	var entities = null;
 	var selected = null;
 	var host = null;
+	var password = null;
 
 	static var visibility_group = "group.hassiq";
 	// Add separate end token, since ciq always appends a ? to the end, it doesn't pollute our real data
@@ -30,6 +31,10 @@ class HassIQState {
 
 	function setHost(host) {
 		self.host = host;
+	}
+
+	function setPassword(password) {
+		self.password = password;
 	}
 
 	function save() {
@@ -73,9 +78,10 @@ class HassIQState {
 		}
 
 		self.updateCallback = callback;
-		Comm.makeWebRequest(api() + "/states?restrict=" + restrict, null, 
-			{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => 
-				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json" }
+		Comm.makeJsonRequest(api() + "/states?restrict=" + restrict, null, 
+			{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers =>
+				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json" ,
+				  "x-ha-access" => password }
 			}, method(:onUpdateReceive) );
 
 		return true;
@@ -83,7 +89,7 @@ class HassIQState {
 
 	function onUpdateReceive(responseCode, data) {
 		if (responseCode == 200) {
-			// System.println("Received data:"+data);
+			System.println("Received data:"+data);
 			self.state = 1;
 			var selected_id = self.selected != null ? self.selected[:entity_id] : null;
 			self.selected = null;
@@ -100,7 +106,7 @@ class HassIQState {
 				}
 			}
 		} else {
-			// System.println("Failed to load\nError: " + responseCode.toString());
+			System.println("Failed to load\nError: " + responseCode.toString());
 			self.state = -1;
 		}
 
@@ -117,10 +123,11 @@ class HassIQState {
 
 		self.serviceCallback = callback;
 
-		Comm.makeWebRequest(api() + "/services/" + domain + "/" + service + "?restrict=" + restrict,
+		Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service + "?restrict=" + restrict,
 			{ "entity_id" => entity[:entity_id] },
 			{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => 
-				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json" }
+				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json",
+				  "x-ha-access" => password }
 			}, method(:onServiceReceive) );	
 
 		return true;
@@ -128,13 +135,13 @@ class HassIQState {
 
 	function onServiceReceive(responseCode, data) {
 		if (responseCode == 200) {
-			// System.println("Received data:"+data);
+			System.println("Received data:"+data);
 			var size = data.size();
 			for (var i=0; i<size; ++i) {
 				buildEntity(data[i], entities);
 			}
 		} else {
-			// System.println("Failed to load\nError: " + responseCode.toString());
+			System.println("Failed to load\nError: " + responseCode.toString());
 		}
 
 		if (self.serviceCallback != null) {
