@@ -43,11 +43,11 @@ class HassIQApp extends App.AppBase {
 	}
 
 	function getInitialView() {
-		view = new HassIQView(state);
 		delegate = new HassIQDelegate(state);
+		view = new HassIQView(state);
 		
 		onSettingsChanged();
-		
+
 		return [view, delegate];
 	}
 }
