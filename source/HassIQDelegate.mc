@@ -16,7 +16,7 @@ class HassIQMenuDelegate extends Ui.MenuInputDelegate {
 			if (symbols[i] == item) {
 				parent.state.selected = parent.state.entities[i];
 				parent.timer = new Timer.Timer();
-				parent.timer.start(parent.method(:onSelect), 50, false);
+				parent.timer.start(parent.method(:toggleSelected), 50, false);
 				break;
 			}
 		}
@@ -52,7 +52,7 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 		menu.setTitle("Trigger");
 		var size = state.entities.size();
 		for (var i=0; i<size; ++i) {
-			menu.addItem(state.entities[i][:name], HassIQMenuDelegate.symbols[i]);
+			menu.addItem(state.entities[i][:title], HassIQMenuDelegate.symbols[i]);
 		}
 
 		Ui.pushView(menu, new HassIQMenuDelegate(self), Ui.SLIDE_UP);
@@ -60,6 +60,10 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 	}
 
 	function onSelect() {
+		onMenu();
+	}
+
+	function toggleSelected() {
 		timer = null;
 
 		var size = state.entities.size();

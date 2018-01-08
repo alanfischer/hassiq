@@ -168,14 +168,18 @@ class HassIQState {
 				state = off;
 			}
 
-			var name = entity[:name] ? entity[:name] : entity[:entity_id];
-			var color = state.equals(on) ? Gfx.COLOR_WHITE : Gfx.COLOR_LT_GRAY;
+			var title = entity[:name] ? entity[:name] : entity[:entity_id];
+			var color = Gfx.COLOR_WHITE;
+			if (state.equals(on)) {
+				title = "* " + title;
+			}
+			entity[:title] = title;
 			if (entity[:drawable]) {
-				entity[:drawable].setText(name);
+				entity[:drawable].setText(title);
 				entity[:drawable].setColor(color);
 			}
 			else {
-				drawable = new Ui.Text({:text=>name, :font=>Gfx.FONT_TINY, :locX =>Ui.LAYOUT_HALIGN_CENTER, :locY=>0, :color=>color});
+				drawable = new Ui.Text({:text=>title, :font=>Gfx.FONT_TINY, :locX =>Ui.LAYOUT_HALIGN_CENTER, :locY=>0, :color=>color});
 				entity[:drawable] = drawable;
 			}
 		}
