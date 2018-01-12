@@ -51,6 +51,7 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 		var menu = new Ui.Menu();
 		menu.setTitle("Trigger");
 		var size = (state.entities != null ? state.entities.size() : 0);
+		if (HassIQMenuDelegate.symbols.size() < size) { size = HassIQMenuDelegate.symbols.size(); }
 		for (var i=0; i<size; ++i) {
 			menu.addItem(state.entities[i][:title], HassIQMenuDelegate.symbols[i]);
 		}
