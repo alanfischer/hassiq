@@ -113,12 +113,22 @@ class HassIQState {
 
 		self.serviceCallback = callback;
 		
-		Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service,
-			{ "entity_id" => entity[:entity_id] },
-			{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => 
-				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json",
-				  "x-ha-access" => password }
-			}, method(:onServiceReceive) );	
+		if (domain == "script") {
+			Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service,
+				{},
+				{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => 
+					{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json",
+					  "x-ha-access" => password }
+				}, method(:onServiceReceive) );	
+		}
+		else {
+			Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service,
+				{ "entity_id" => entity[:entity_id] },
+				{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => 
+					{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json",
+					  "x-ha-access" => password }
+				}, method(:onServiceReceive) );	
+		}
 
 		return true;
 	}
@@ -248,6 +258,12 @@ class HassIQState {
 		var entity_id = entity[:entity_id] ? entity[:entity_id] : entity["entity_id"];
 		return split(entity_id, ".")[0];
 	}
+	
+	function getEntityId(entity) {
+		var entity_id = entity[:entity_id] ? entity[:entity_id] : entity["entity_id"];
+		return split(entity_id, ".")[1];
+	}
+
 
 	function split(s, sep) {
 		var tokens = [];
