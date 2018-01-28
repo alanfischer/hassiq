@@ -13,20 +13,10 @@ class HassIQState {
 	var password = null;
 
 	static var visibility_group = "group.hassiq";
-	// Add separate end token, since ciq always appends a ? to the end, it doesn't pollute our real data
-	static var domains = [visibility_group,"light","switch","remote","end"];
-	static var restrict = null;
 	static var on = "on";
 	static var off = "off";
 
 	function initialize() {
-		var length = domains.size();
-		if (length > 0) {
-			restrict = domains[0];
-			for (var i=1; i<length; ++i) {
-				restrict += "," + domains[i];
-			}
-		}
 	}
 
 	function setHost(host) {
@@ -78,7 +68,7 @@ class HassIQState {
 		}
 
 		self.updateCallback = callback;
-		Comm.makeJsonRequest(api() + "/states?restrict=" + restrict, null, 
+		Comm.makeJsonRequest(api() + "/states?limit_group=" + visibility_group, null, 
 			{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers =>
 				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json" ,
 				  "x-ha-access" => password }
@@ -122,13 +112,23 @@ class HassIQState {
 		}
 
 		self.serviceCallback = callback;
-
-		Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service + "?restrict=" + restrict,
-			{ "entity_id" => entity[:entity_id] },
-			{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => 
-				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json",
-				  "x-ha-access" => password }
-			}, method(:onServiceReceive) );	
+		
+		if (domain == "script") {
+			Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service,
+				{},
+				{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => 
+					{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json",
+					  "x-ha-access" => password }
+				}, method(:onServiceReceive) );	
+		}
+		else {
+			Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service,
+				{ "entity_id" => entity[:entity_id] },
+				{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => 
+					{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json",
+					  "x-ha-access" => password }
+				}, method(:onServiceReceive) );	
+		}
 
 		return true;
 	}
@@ -194,10 +194,6 @@ class HassIQState {
 		var name = attributes["friendly_name"];
 		var hid = attributes["hidden"];
 
-		if (entity_id.equals(visibility_group)) {
-			visible_ids = attributes["entity_id"];
-		}
-
 		if (hid == true) {
 			return null;
 		}
@@ -235,19 +231,6 @@ class HassIQState {
 			size++;
 		}
 
-		if (visible_ids != null) {
-			var filtered_entities = new [size];
-			var s = 0;
-			for (var i=0; i<size; ++i) {
-				if (visible_ids.indexOf(entities[i][:entity_id]) >= 0) {
-					filtered_entities[s] = entities[i];
-					s++;
-				}
-			}
-			entities = filtered_entities;
-			size = s;
-		}
-
 		var sorted = new [size];
 		var s = 0;
 		for (var p=0; p<2; ++p) {
@@ -275,6 +258,12 @@ class HassIQState {
 		var entity_id = entity[:entity_id] ? entity[:entity_id] : entity["entity_id"];
 		return split(entity_id, ".")[0];
 	}
+	
+	function getEntityId(entity) {
+		var entity_id = entity[:entity_id] ? entity[:entity_id] : entity["entity_id"];
+		return split(entity_id, ".")[1];
+	}
+
 
 	function split(s, sep) {
 		var tokens = [];

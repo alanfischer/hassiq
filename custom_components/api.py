@@ -185,19 +185,29 @@ class APIStatesView(HomeAssistantView):
         """Get current states."""
         hass = request.app['hass']
         json_response = []
+        
+        limit = request.query.get('limit_group')
+        if limit:
+            group_entity = hass.states.get(limit)
+            if group_entity:
+                for entity_id in group_entity.attributes['entity_id']:
+                    entity = hass.states.get(entity_id)
+                    if entity:
+                        json_response.append(entity)
 
-        restrict = request.query.get('restrict')
-
-        if restrict:
-            restrict = restrict.split(',')
-            print("RESTRICT:"+str(restrict))
-            for entity in hass.states.async_all():
-                if restrict and entity.domain not in restrict and entity.entity_id not in restrict:
-                    continue
-
-                json_response.append(entity)
         else:
-            json_response = hass.states.async_all()
+            restrict = request.query.get('restrict')
+    
+            if restrict:
+                restrict = restrict.split(',')
+                print("RESTRICT:"+str(restrict))
+                for entity in hass.states.async_all():
+                    if restrict and entity.domain not in restrict and entity.entity_id not in restrict:
+                        continue
+    
+                    json_response.append(entity)
+            else:
+                json_response = hass.states.async_all()
 
         return self.json(json_response)
 
