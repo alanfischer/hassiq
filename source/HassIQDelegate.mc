@@ -100,9 +100,9 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 	function onServiceCalled(state) {
 		if (progressBar != null) {
 			progressBar = null;
-			try {
+			if (Ui has :popView) { // This appears to sometimes be unavailable?  Trying to watch for it.
 				Ui.popView(Ui.SLIDE_UP);
-			} catch(ex) { }
+			}
 		}
 		Ui.requestUpdate();
 	}

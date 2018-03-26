@@ -59,7 +59,7 @@ class HassIQState {
 	}
 
 	function api() {
-		return "http://" + host + "/api";
+		return host + "/api";
 	}
 
 	function update(callback) {
@@ -208,6 +208,7 @@ class HassIQState {
 			}
 		}
 		if (entity == null) { entity = {:entity_id=>entity_id, :name=>name}; }
+		else { entity[:name] = name; }
 
 		if (!state.equals(entity[:state])) {
 			updateEntityState(entity, state);

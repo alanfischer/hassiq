@@ -4,7 +4,7 @@ class HassIQApp extends App.AppBase {
 	var state = new HassIQState();
 	var view;
 	var delegate;
-	var host = "home:8123";
+	var host = "http://hassbian.local:8123";
 	var password = null;
 
 	function initialize() {
