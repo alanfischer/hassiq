@@ -52,11 +52,13 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 		menu.setTitle("Trigger");
 		var size = (state.entities != null ? state.entities.size() : 0);
 		if (HassIQMenuDelegate.symbols.size() < size) { size = HassIQMenuDelegate.symbols.size(); }
-		for (var i=0; i<size; ++i) {
-			menu.addItem(state.entities[i][:title], HassIQMenuDelegate.symbols[i]);
-		}
+		if (size > 0) {
+			for (var i=0; i<size; ++i) {
+				menu.addItem(state.entities[i][:title], HassIQMenuDelegate.symbols[i]);
+			}
 
-		Ui.pushView(menu, new HassIQMenuDelegate(self), Ui.SLIDE_UP);
+			Ui.pushView(menu, new HassIQMenuDelegate(self), Ui.SLIDE_UP);
+		}
 		return true;
 	}
 

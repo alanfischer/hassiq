@@ -38,8 +38,18 @@ class HassIQApp extends App.AppBase {
 	}
 
 	function onSettingsChanged() {
-		state.setHost(host ? host : getProperty("host"));
-		state.setPassword(password ? password : getProperty("password"));
+		var stateHost = getProperty("host");
+		var statePassword = getProperty("password");
+
+		if (stateHost == null || stateHost.length() == 0) {
+			stateHost = host;
+		}
+		if (statePassword == null || statePassword.length() == 0) {
+			statePassword = password;
+		}
+
+		state.setHost(stateHost);
+		state.setPassword(statePassword);
 	}
 
 	function getInitialView() {
