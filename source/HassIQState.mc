@@ -6,13 +6,12 @@ class HassIQState {
 	var serviceCallback = null;
 	var updateCallback = null;
 	var state = 0;
-	var visible_ids = null;
 	var entities = null;
 	var selected = null;
 	var host = null;
 	var password = null;
+	var visibilityGroup = null;
 
-	static var visibility_group = "group.hassiq";
 	static var on = "on";
 	static var off = "off";
 
@@ -27,11 +26,15 @@ class HassIQState {
 		self.password = password;
 	}
 
+	function setGroup(group) {
+		self.visibilityGroup = group;
+	}
+
 	function save() {
 		if (entities == null) {
 			return null;
 		}
-		
+
 		var size = entities.size();		
 		var stored = new [size];
 
@@ -39,7 +42,7 @@ class HassIQState {
 			var entity = entities[i];
 			stored[i] = { "entity_id" => entity[:entity_id], "name" => entity[:name], "state" => entity[:state] };
 		}
-		
+
 		return stored;
 	}
 
@@ -47,15 +50,22 @@ class HassIQState {
 		if (!(stored instanceof Array)) {
 			return;
 		}
-		
+
 		var size = stored.size();
 		entities = new [size];
-		
+
 		for (var i=0; i<size; ++i) {
 			var store = stored[i];
 			entities[i] = { :entity_id => store["entity_id"], :name => store["name"], :state => store["state"] };
-			updateEntityState(entities[i], entities[i][:state]);
+			if (entities[i][:state] != null) {
+				updateEntityState(entities[i], entities[i][:state]);
+			}
 		}
+	}
+
+	function destroy() {
+		self.updateCallback = null;
+		self.serviceCallback = null;
 	}
 
 	function api() {
@@ -63,12 +73,11 @@ class HassIQState {
 	}
 
 	function update(callback) {
-		if (self.updateCallback != null) {
-			return false;
-		}
+		log("Requesting update");
 
 		self.updateCallback = callback;
-		Comm.makeJsonRequest(api() + "/states?limit_group=" + visibility_group, null, 
+
+		Comm.makeJsonRequest(api() + "/states/" + visibilityGroup, null,
 			{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers =>
 				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json" ,
 				  "x-ha-access" => password }
@@ -79,30 +88,65 @@ class HassIQState {
 
 	function onUpdateReceive(responseCode, data) {
 		if (responseCode == 200) {
-			System.println("Received data:"+data);
+			log("Received data:"+data);
+
 			self.state = 1;
 			var selected_id = self.selected != null ? self.selected[:entity_id] : null;
 			self.selected = null;
 
 			self.entities = buildEntities(data, entities);
 
-			if (selected_id != null) {
-				var size = entities.size();
-				for (var i=0; i<size; ++i) {
-					if (selected_id.equals(entities[i][:entity_id])) {
-						self.selected = entities[i];
-						break;
-					}
+			var size = entities.size();
+			for (var i=0; i<size; ++i) {
+				var entity = entities[i];
+
+				if (selected_id != null && selected_id.equals(entity[:entity_id])) {
+					self.selected = entity;
+					break;
 				}
 			}
+
+			if (size > 0) {
+				singleUpdate(entities[0]);
+			}
 		} else {
-			System.println("Failed to load\nError: " + responseCode.toString());
+			log("Failed to load\nError: " + responseCode.toString());
 			self.state = -1;
 		}
 
 		if (self.updateCallback != null) {
 			self.updateCallback.invoke(self);
-			self.updateCallback = null;
+		}
+	}
+
+	function singleUpdate(entity) {
+		log("Fetching:"+entity[:entity_id]);
+
+		Comm.makeJsonRequest(api() + "/states/" + entity[:entity_id], null,
+			{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers =>
+				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json" ,
+				  "x-ha-access" => password }
+			}, method(:onSingleUpdateReceive) );
+	}
+
+	function onSingleUpdateReceive(responseCode, data) {
+		if (responseCode == 200) {
+			log("Received data:"+data);
+
+			var entity = buildEntity(data, entities);
+
+			var size = entities.size();
+			for (var i=0; i<size-1; ++i) {
+				if (entity[:entity_id].equals(entities[i][:entity_id])) {
+					singleUpdate(entities[i+1]);
+				}
+			}
+		} else {
+			log("Failed to load\nError: " + responseCode.toString());
+		}
+
+		if (self.updateCallback != null) {
+			self.updateCallback.invoke(self);
 		}
 	}
 
@@ -112,36 +156,31 @@ class HassIQState {
 		}
 
 		self.serviceCallback = callback;
-		
-		if (domain == "script") {
-			Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service,
-				{},
-				{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => 
-					{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json",
-					  "x-ha-access" => password }
-				}, method(:onServiceReceive) );	
+
+		var data = {};
+		if (domain != "script") {
+			data = { "entity_id" => entity[:entity_id] };
 		}
-		else {
-			Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service,
-				{ "entity_id" => entity[:entity_id] },
-				{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => 
-					{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json",
-					  "x-ha-access" => password }
-				}, method(:onServiceReceive) );	
-		}
+		Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service,
+			data,
+			{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers =>
+				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json",
+				  "x-ha-access" => password }
+			}, method(:onServiceReceive) );
 
 		return true;
 	}
 
 	function onServiceReceive(responseCode, data) {
 		if (responseCode == 200) {
-			System.println("Received data:"+data);
+			log("Received data:"+data);
+
 			var size = data.size();
 			for (var i=0; i<size; ++i) {
 				buildEntity(data[i], entities);
 			}
 		} else {
-			System.println("Failed to load\nError: " + responseCode.toString());
+			log("Failed to load\nError: " + responseCode.toString());
 		}
 
 		if (self.serviceCallback != null) {
@@ -151,6 +190,9 @@ class HassIQState {
 	}
 
 	function updateEntityState(entity, state) {
+		if (state == null) {
+			state = entity[:state] != null ? entity[:state] : off;
+		}
 		var drawable = null;
 		if (getEntityDomain(entity).equals("sun")) {
 			if (state.equals("above_horizon") ) {
@@ -164,7 +206,7 @@ class HassIQState {
 			if (state.equals(on)) {
 				state = on;
 			}
-			else if (state.equals(off)) {
+			else if(state.equals(off)) {
 				state = off;
 			}
 
@@ -191,8 +233,12 @@ class HassIQState {
 		var entity_id = item["entity_id"];
 		var state = item["state"];
 		var attributes = item["attributes"];
-		var name = attributes["friendly_name"];
-		var hid = attributes["hidden"];
+		var name = null;
+		var hid = false;
+		if (attributes != null) {
+			name = attributes["friendly_name"];
+			hid = attributes["hidden"];
+		}
 
 		if (hid == true) {
 			return null;
@@ -208,28 +254,44 @@ class HassIQState {
 			}
 		}
 		if (entity == null) { entity = {:entity_id=>entity_id, :name=>name}; }
-		else { entity[:name] = name; }
+		else if (name != null) { entity[:name] = name; }
 
-		if (!state.equals(entity[:state])) {
-			updateEntityState(entity, state);
-		}
+		updateEntityState(entity, state);
 
 		return entity;
 	}
 
 	function buildEntities(data, previous) {
-		var data_size = data.size();
-		var entities = new [data_size];
-		var size=0;
-		for (var i=0; i<data_size; ++i) {
-			var entity = buildEntity(data[i], previous);
-			
-			if (entity == null) {
-				continue;
-			}
+		var size = 0;
+		var entities;
+		if (data instanceof Array) {
+			var entities_size = data.size();
+			entities = new [entities_size];
+			for (var i=0; i<entities_size; ++i) {
+				var entity = buildEntity(data[i], previous);
 
-			entities[size] = entity;
-			size++;
+				if (entity == null) {
+					continue;
+				}
+
+				entities[size] = entity;
+				size++;
+			}
+		}
+		else {
+			var entities_list = data["attributes"]["entity_id"];
+			var entities_size = entities_list.size();
+			entities = new [entities_size];
+			for (var i=0; i<entities_size; ++i) {
+				var entity = buildEntity({"entity_id" => entities_list[i]}, previous);
+
+				if (entity == null) {
+					continue;
+				}
+
+				entities[size] = entity;
+				size++;
+			}
 		}
 
 		var sorted = new [size];
@@ -259,12 +321,11 @@ class HassIQState {
 		var entity_id = entity[:entity_id] ? entity[:entity_id] : entity["entity_id"];
 		return split(entity_id, ".")[0];
 	}
-	
+
 	function getEntityId(entity) {
 		var entity_id = entity[:entity_id] ? entity[:entity_id] : entity["entity_id"];
 		return split(entity_id, ".")[1];
 	}
-
 
 	function split(s, sep) {
 		var tokens = [];
@@ -292,6 +353,10 @@ class HassIQState {
 		return false;
 	}
 
+	function log(message) {
+		System.println(message);
+	}
+
 	(:test)
 	function assert(condition) { if(!condition) { oh_no(); }}
 	(:test)
@@ -311,7 +376,7 @@ class HassIQState {
 				"entity_id" => "test.item2"
 			}
 		];
-		
+
 		var entities = buildEntities(data, null);
 		assert(entities.size() == 1);
 		assert(getEntityDomain(entities[0]).equals("test"));

@@ -4,8 +4,6 @@ class HassIQApp extends App.AppBase {
 	var state = new HassIQState();
 	var view;
 	var delegate;
-	var host = "http://hassbian.local:8123";
-	var password = null;
 
 	function initialize() {
 		AppBase.initialize();
@@ -35,28 +33,27 @@ class HassIQApp extends App.AppBase {
 			selected = self.state.selected[:entity_id];
 		}
 		setProperty("selected", selected);
+
+		self.state.destroy();
 	}
 
 	function onSettingsChanged() {
-		var stateHost = getProperty("host");
-		var statePassword = getProperty("password");
+		var host = getProperty("host");
+		var password = getProperty("password");
+		var group = getProperty("group");
 
-		if (stateHost == null || stateHost.length() == 0) {
-			stateHost = host;
-		}
-		if (statePassword == null || statePassword.length() == 0) {
-			statePassword = password;
-		}
+		state.setHost(host);
+		state.setPassword(password);
+		state.setGroup(group);
 
-		state.setHost(stateHost);
-		state.setPassword(statePassword);
+		if (view != null) {
+			view.requestUpdate();
+		}
 	}
 
 	function getInitialView() {
 		delegate = new HassIQDelegate(state);
 		view = new HassIQView(state);
-		
-		onSettingsChanged();
 
 		return [view, delegate];
 	}

@@ -54,7 +54,9 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 		if (HassIQMenuDelegate.symbols.size() < size) { size = HassIQMenuDelegate.symbols.size(); }
 		if (size > 0) {
 			for (var i=0; i<size; ++i) {
-				menu.addItem(state.entities[i][:title], HassIQMenuDelegate.symbols[i]);
+				var entity = state.entities[i];
+				var title = entity[:name] ? entity[:name] : entity[:entity_id];
+				menu.addItem(title, HassIQMenuDelegate.symbols[i]);
 			}
 
 			Ui.pushView(menu, new HassIQMenuDelegate(self), Ui.SLIDE_UP);

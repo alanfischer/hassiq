@@ -13,6 +13,10 @@ class HassIQView extends Ui.View {
 	function onLayout(dc) {
 		onStateUpdated(state);
 
+		requestUpdate();
+	}
+
+	function requestUpdate() {
 		self.state.update(method(:onStateUpdated));
 	}
 
@@ -21,8 +25,6 @@ class HassIQView extends Ui.View {
    	}
 
 	function onUpdate(dc) {
-		// System.println("onUpdate");
-
 		if (state.entities) {
 			var size = state.entities.size();
 			var layout = new [size];

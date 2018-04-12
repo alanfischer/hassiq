@@ -1,12 +1,14 @@
 <resources>
     <properties>
-        <property id="host" type="string">home:8123</property>
+        <property id="host" type="string">http://hassbian.local:8123</property>
         <property id="password" type="string"></property>
+        <property id="group" type="string">group.hassiq</property>
     </properties>
 
     <strings>
        <string id="host_title">Host</string>
        <string id="password_title">Password</string>
+       <string id="group_title">Visible Group</string>
     </strings>
 
     <settings>
@@ -14,6 +16,9 @@
             <settingConfig type="alphaNumeric" />
         </setting>
         <setting propertyKey="@Properties.password" title="@Strings.password_title">
+            <settingConfig type="alphaNumeric" />
+        </setting>
+        <setting propertyKey="@Properties.group" title="@Strings.group_title">
             <settingConfig type="alphaNumeric" />
         </setting>
     </settings>
