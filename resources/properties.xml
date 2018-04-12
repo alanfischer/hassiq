@@ -2,7 +2,7 @@
     <properties>
         <property id="host" type="string">http://hassbian.local:8123</property>
         <property id="password" type="string"></property>
-        <property id="group" type="string">group.hassiq</property>
+        <property id="group" type="string">group.default_view</property>
     </properties>
 
     <strings>
