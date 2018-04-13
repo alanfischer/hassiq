@@ -4,11 +4,11 @@ This is a Home Assistant interface for Garmin's Connect IQ devices.
 
 * https://github.com/alanfischer/hassiq
 
-It currently requires that you have a modified api.py that allows for restricting the requested results.  This is included in the custom_components directory.
+Get it from the CIQ app store:
+
+* https://apps.garmin.com/en-US/apps/47bd4ae9-088b-4404-a299-5bb5f69e0470
 
 Steps to install:
 
-1. Copy custom_components/api.py into your .homeassistant/custom_components directory.
-2. Create a group in home assistant called group.hassiq  This contains all the entities you wish to show on the HassIQ app.
-3. Edit HassIQApp.mc and change the host to point to your homeassistant address.
-4. Build HassIQ.prg and copy to the Apps directory on your Garmin.
+1. Edit HassIQApp.mc and change the host/password/group to your desired values.
+2. Build HassIQ.prg and copy to the Apps directory on your Garmin.
