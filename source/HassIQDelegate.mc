@@ -41,6 +41,7 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 	var state;
 	var timer;
 	var progressBar;
+	var progressTimer;
 
 	function initialize(state) {
 		self.state = state;
@@ -98,16 +99,32 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 		
 		progressBar = new Ui.ProgressBar("Triggering", null);
 		Ui.pushView(progressBar, new HassIQProgressBarDelegate(self), Ui.SLIDE_DOWN);
+
+		progressTimer = new Timer.Timer();
+		progressTimer.start(method(:onTimer), 500, false);
+
 		state.callService(domain, service, entity, method(:onServiceCalled));
+	}
+
+	// Combining the Timer & Service callbacks here let us avoid a CIQ crash that happens when we
+	//  popView very shortly after we pushView.  This way we make sure enough time has lapsed before we popView.
+	function onTimer() {
+		if (progressTimer != null) {
+			progressTimer = null;
+			if (progressBar == null) {
+				Ui.popView(Ui.SLIDE_UP);
+				Ui.requestUpdate();
+			}
+		}
 	}
 
 	function onServiceCalled(state) {
 		if (progressBar != null) {
 			progressBar = null;
-			if (Ui has :popView) { // This appears to sometimes be unavailable?  Trying to watch for it.
+			if (progressTimer == null) {
 				Ui.popView(Ui.SLIDE_UP);
+				Ui.requestUpdate();
 			}
 		}
-		Ui.requestUpdate();
 	}
 }
