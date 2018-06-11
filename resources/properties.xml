@@ -16,7 +16,7 @@
             <settingConfig type="alphaNumeric" />
         </setting>
         <setting propertyKey="@Properties.password" title="@Strings.password_title">
-            <settingConfig type="alphaNumeric" />
+            <settingConfig type="password" />
         </setting>
         <setting propertyKey="@Properties.group" title="@Strings.group_title">
             <settingConfig type="alphaNumeric" />
