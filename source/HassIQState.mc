@@ -5,7 +5,7 @@ using Toybox.Graphics as Gfx;
 class HassIQState {
 	var serviceCallback = null;
 	var updateCallback = null;
-	var state = 0;
+	var status = 0;
 	var entities = null;
 	var selected = null;
 	var host = null;
@@ -87,10 +87,10 @@ class HassIQState {
 	}
 
 	function onUpdateReceive(responseCode, data) {
+		self.status = responseCode;
 		if (responseCode == 200) {
 			log("Received data:"+data);
 
-			self.state = 1;
 			var selected_id = self.selected != null ? self.selected[:entity_id] : null;
 			self.selected = null;
 
@@ -111,7 +111,6 @@ class HassIQState {
 			}
 		} else {
 			log("Failed to load\nError: " + responseCode.toString());
-			self.state = -1;
 		}
 
 		if (self.updateCallback != null) {

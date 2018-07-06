@@ -49,7 +49,14 @@ class HassIQView extends Ui.View {
 
 			setLayout(layout.slice(0,count));
 		} else {
-			setLayout(Rez.Layouts.MainLayout(dc));
+			var error = new WatchUi.Text({
+				:text => "Status:" + state.status,
+				:color => Graphics.COLOR_WHITE,
+				:font => Graphics.FONT_LARGE,
+				:locX => WatchUi.LAYOUT_HALIGN_CENTER,
+				:locY => WatchUi.LAYOUT_VALIGN_CENTER
+			});
+			setLayout([error]);
 		}
 
 		View.onUpdate(dc);
@@ -63,12 +70,14 @@ class HassIQView extends Ui.View {
 		}
 		*/
 
-		var color = Gfx.COLOR_YELLOW;		
-		if(state.state == -1) {
-			color = Gfx.COLOR_RED;
-		}
-		else if(state.state == 1) {
-			color = Gfx.COLOR_GREEN;
+		var color = Gfx.COLOR_YELLOW;
+		if (state.status != 0) {
+			if (state.status == 200) {
+				color = Gfx.COLOR_GREEN;
+			}
+			else {
+				color = Gfx.COLOR_RED;
+			}
 		}
 		dc.setColor(color, color);
 		dc.fillRectangle(0, dc.getHeight() - 4, dc.getWidth(), 4);
