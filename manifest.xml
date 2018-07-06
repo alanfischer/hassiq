@@ -7,15 +7,21 @@
             <iq:product id="d2charlie"/>
             <iq:product id="descentmk1"/>
             <iq:product id="edge1030"/>
+            <iq:product id="edge1030bontrager"/>
+            <iq:product id="edge520plus"/>
             <iq:product id="edge820"/>
             <iq:product id="edge_1000"/>
             <iq:product id="edge_520"/>
+            <iq:product id="edgeexplore"/>
             <iq:product id="epix"/>
             <iq:product id="fenix3"/>
             <iq:product id="fenix3_hr"/>
             <iq:product id="fenix5"/>
+            <iq:product id="fenix5plus"/>
             <iq:product id="fenix5s"/>
+            <iq:product id="fenix5splus"/>
             <iq:product id="fenix5x"/>
+            <iq:product id="fenix5xplus"/>
             <iq:product id="fenixchronos"/>
             <iq:product id="fr230"/>
             <iq:product id="fr235"/>
@@ -29,6 +35,7 @@
             <iq:product id="rino7xx"/>
             <iq:product id="vivoactive"/>
             <iq:product id="vivoactive3"/>
+            <iq:product id="vivoactive3m"/>
             <iq:product id="vivoactive_hr"/>
         </iq:products>
         <iq:permissions>
