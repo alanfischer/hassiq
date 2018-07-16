@@ -11,11 +11,13 @@ class HassIQState {
 	var host = null;
 	var password = null;
 	var visibilityGroup = null;
+	var headers;
 
 	static var on = "on";
 	static var off = "off";
 
 	function initialize() {
+		setPassword(null);
 	}
 
 	function setHost(host) {
@@ -24,6 +26,18 @@ class HassIQState {
 
 	function setPassword(password) {
 		self.password = password;
+		if (password != null) {
+			headers = {
+				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "x-ha-access" => password
+			};
+		} else {
+			headers = {
+				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON
+			};
+		}
+	}
+	
+	function buildHeaders() {
 	}
 
 	function setGroup(group) {
@@ -77,12 +91,16 @@ class HassIQState {
 
 		self.updateCallback = callback;
 
-		Comm.makeJsonRequest(api() + "/states/" + visibilityGroup, null,
-			{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers =>
-				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json" ,
-				  "x-ha-access" => password }
-			}, method(:onUpdateReceive) );
-
+		if (Comm has :makeWebRequest) {
+			Comm.makeWebRequest(api() + "/states/" + visibilityGroup, null,
+				{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => headers },
+				method(:onUpdateReceive) );
+		} else {
+			Comm.makeJsonRequest(api() + "/states/" + visibilityGroup, null,
+				{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => headers },
+				method(:onUpdateReceive) );
+		}
+		
 		return true;
 	}
 
@@ -120,12 +138,16 @@ class HassIQState {
 
 	function singleUpdate(entity) {
 		log("Fetching:"+entity[:entity_id]);
-
-		Comm.makeJsonRequest(api() + "/states/" + entity[:entity_id], null,
-			{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers =>
-				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json" ,
-				  "x-ha-access" => password }
-			}, method(:onSingleUpdateReceive) );
+		
+		if (Comm has :makeWebRequest) {
+			Comm.makeWebRequest(api() + "/states/" + entity[:entity_id], null,
+				{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => headers },
+				method(:onSingleUpdateReceive) );
+		} else {
+			Comm.makeJsonRequest(api() + "/states/" + entity[:entity_id], null,
+				{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => headers },
+				method(:onSingleUpdateReceive) );
+		}
 	}
 
 	function onSingleUpdateReceive(responseCode, data) {
@@ -160,12 +182,16 @@ class HassIQState {
 		if (domain != "script") {
 			data = { "entity_id" => entity[:entity_id] };
 		}
-		Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service,
-			data,
-			{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers =>
-				{ "Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Accept" => "application/json",
-				  "x-ha-access" => password }
-			}, method(:onServiceReceive) );
+		
+		if (Comm has :makeWebRequest) {
+			Comm.makeWebRequest(api() + "/services/" + domain + "/" + service, data,
+				{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => headers },
+				method(:onServiceReceive) );
+		} else {
+			Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service, data,
+				{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => headers },
+				method(:onServiceReceive) );
+		}
 
 		return true;
 	}
@@ -196,16 +222,14 @@ class HassIQState {
 		if (getEntityDomain(entity).equals("sun")) {
 			if (state.equals("above_horizon") ) {
 				drawable = new Ui.Bitmap({:rezId=>Rez.Drawables.sun});
-			}
-			else {
+			} else {
 				drawable = new Ui.Bitmap({:rezId=>Rez.Drawables.moon});
 			}
 			entity[:drawable] = drawable;
 		} else {
 			if (state.equals(on)) {
 				state = on;
-			}
-			else if(state.equals(off)) {
+			} else if(state.equals(off)) {
 				state = off;
 			}
 
@@ -218,8 +242,7 @@ class HassIQState {
 			if (entity[:drawable]) {
 				entity[:drawable].setText(title);
 				entity[:drawable].setColor(color);
-			}
-			else {
+			} else {
 				drawable = new Ui.Text({:text=>title, :font=>Gfx.FONT_TINY, :locX =>Ui.LAYOUT_HALIGN_CENTER, :locY=>0, :color=>color});
 				entity[:drawable] = drawable;
 			}
@@ -304,8 +327,7 @@ class HassIQState {
 						sorted[s] = entity;
 						s++;
 					}
-				}
-				else {
+				} else {
 					if (p == 1) {
 						sorted[s] = entity;
 						s++;

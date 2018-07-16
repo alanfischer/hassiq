@@ -74,8 +74,7 @@ class HassIQView extends Ui.View {
 		if (state.status != 0) {
 			if (state.status == 200) {
 				color = Gfx.COLOR_GREEN;
-			}
-			else {
+			} else {
 				color = Gfx.COLOR_RED;
 			}
 		}

@@ -87,12 +87,10 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 		if (state.getEntityDomain(entity).equals("automation")) {
 			domain = "automation";
 			service = "trigger";
-		}
-		else if (state.getEntityDomain(entity).equals("script")) {
+		} else if (state.getEntityDomain(entity).equals("script")) {
 			domain = "script";
 			service = state.getEntityId(entity);			
-		}
-		else {
+		} else {
 			domain = "homeassistant";
 			service = "toggle";
 		}
