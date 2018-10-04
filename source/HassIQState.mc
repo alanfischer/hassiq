@@ -1,6 +1,6 @@
 using Toybox.Communications as Comm;
-using Toybox.WatchUi as Ui;
-using Toybox.Graphics as Gfx;
+using Toybox.Graphics;
+using Toybox.WatchUi;
 
 class HassIQState {
 	var serviceCallback = null;
@@ -221,9 +221,9 @@ class HassIQState {
 		var drawable = null;
 		if (getEntityDomain(entity).equals("sun")) {
 			if (state.equals("above_horizon") ) {
-				drawable = new Ui.Bitmap({:rezId=>Rez.Drawables.sun});
+				drawable = new WatchUi.Bitmap({:rezId=>Rez.Drawables.sun});
 			} else {
-				drawable = new Ui.Bitmap({:rezId=>Rez.Drawables.moon});
+				drawable = new WatchUi.Bitmap({:rezId=>Rez.Drawables.moon});
 			}
 			entity[:drawable] = drawable;
 		} else {
@@ -234,7 +234,7 @@ class HassIQState {
 			}
 
 			var title = entity[:name] ? entity[:name] : entity[:entity_id];
-			var color = Gfx.COLOR_WHITE;
+			var color = Graphics.COLOR_WHITE;
 			if (state.equals(on)) {
 				title = "* " + title;
 			}
@@ -243,7 +243,7 @@ class HassIQState {
 				entity[:drawable].setText(title);
 				entity[:drawable].setColor(color);
 			} else {
-				drawable = new Ui.Text({:text=>title, :font=>Gfx.FONT_TINY, :locX =>Ui.LAYOUT_HALIGN_CENTER, :locY=>0, :color=>color});
+				drawable = new WatchUi.Text({:text=>title, :font=>Graphics.FONT_TINY, :locX=>WatchUi.LAYOUT_HALIGN_CENTER, :locY=>0, :color=>color});
 				entity[:drawable] = drawable;
 			}
 		}

@@ -1,7 +1,7 @@
-using Toybox.Communications as Comm;
-using Toybox.WatchUi as Ui;
+using Toybox.WatchUi;
+using Toybox.Timer;
 
-class HassIQMenuDelegate extends Ui.MenuInputDelegate {
+class HassIQMenuDelegate extends WatchUi.MenuInputDelegate {
 	var parent;
 	static var symbols=[:s0,:s1,:s2,:s3,:s4,:s5,:s6,:s7,:s8,:s9,:s10,:s11,:s12,:s13,:s14,:s15,:s16];
 
@@ -23,21 +23,21 @@ class HassIQMenuDelegate extends Ui.MenuInputDelegate {
 	}
 }
 
-class HassIQProgressBarDelegate extends Ui.BehaviorDelegate {
+class HassIQProgressBarDelegate extends WatchUi.BehaviorDelegate {
 	var parent;
 
 	function initialize(parent) {
 		self.parent = parent;
-		Ui.BehaviorDelegate.initialize();
+		WatchUi.BehaviorDelegate.initialize();
 	}
 
 	function onBack() {
 		parent.progressBar = null;
-		Ui.requestUpdate();
+		WatchUi.requestUpdate();
 	}
 }
 
-class HassIQDelegate extends Ui.BehaviorDelegate {
+class HassIQDelegate extends WatchUi.BehaviorDelegate {
 	var state;
 	var timer;
 	var progressBar;
@@ -45,11 +45,11 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 
 	function initialize(state) {
 		self.state = state;
-		Ui.BehaviorDelegate.initialize();
+		WatchUi.BehaviorDelegate.initialize();
 	}
 
 	function onMenu() {
-		var menu = new Ui.Menu();
+		var menu = new WatchUi.Menu();
 		menu.setTitle("Trigger");
 		var size = (state.entities != null ? state.entities.size() : 0);
 		if (HassIQMenuDelegate.symbols.size() < size) { size = HassIQMenuDelegate.symbols.size(); }
@@ -60,7 +60,7 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 				menu.addItem(title, HassIQMenuDelegate.symbols[i]);
 			}
 
-			Ui.pushView(menu, new HassIQMenuDelegate(self), Ui.SLIDE_UP);
+			WatchUi.pushView(menu, new HassIQMenuDelegate(self), WatchUi.SLIDE_UP);
 		}
 		return true;
 	}
@@ -96,8 +96,8 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 			service = "toggle";
 		}
 		
-		progressBar = new Ui.ProgressBar("Triggering", null);
-		Ui.pushView(progressBar, new HassIQProgressBarDelegate(self), Ui.SLIDE_DOWN);
+		progressBar = new WatchUi.ProgressBar("Triggering", null);
+		WatchUi.pushView(progressBar, new HassIQProgressBarDelegate(self), WatchUi.SLIDE_DOWN);
 
 		progressTimer = new Timer.Timer();
 		progressTimer.start(method(:onTimer), 500, false);
@@ -111,8 +111,8 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 		if (progressTimer != null) {
 			progressTimer = null;
 			if (progressBar == null) {
-				Ui.popView(Ui.SLIDE_UP);
-				Ui.requestUpdate();
+				WatchUi.popView(WatchUi.SLIDE_UP);
+				WatchUi.requestUpdate();
 			}
 		}
 	}
@@ -121,8 +121,8 @@ class HassIQDelegate extends Ui.BehaviorDelegate {
 		if (progressBar != null) {
 			progressBar = null;
 			if (progressTimer == null) {
-				Ui.popView(Ui.SLIDE_UP);
-				Ui.requestUpdate();
+				WatchUi.popView(WatchUi.SLIDE_UP);
+				WatchUi.requestUpdate();
 			}
 		}
 	}

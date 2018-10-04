@@ -1,7 +1,8 @@
-using Toybox.WatchUi as Ui;
-using Toybox.Graphics as Gfx;
+using Toybox.Graphics;
+using Toybox.WatchUi;
+using Toybox.Timer;
 
-class HassIQView extends Ui.View {
+class HassIQView extends WatchUi.View {
 	var state;
 
 	function initialize(state) {
@@ -21,7 +22,7 @@ class HassIQView extends Ui.View {
 	}
 
 	function onStateUpdated(state) {
-		Ui.requestUpdate();
+		WatchUi.requestUpdate();
    	}
 
 	function onUpdate(dc) {
@@ -30,7 +31,7 @@ class HassIQView extends Ui.View {
 			var layout = new [size];
 			var count = 0;
 			var height = dc.getHeight();
-			var fontHeight = dc.getFontHeight(Gfx.FONT_TINY);
+			var fontHeight = dc.getFontHeight(Graphics.FONT_TINY);
 
 			// Only show as many entities as we have room for
 			for(var i=0; i<size && (count*fontHeight)<height; ++i) {
@@ -44,7 +45,7 @@ class HassIQView extends Ui.View {
 			}
 
 			for(var i=0; i<count; ++i) {
-				layout[i].setLocation(Ui.LAYOUT_HALIGN_CENTER, (height / 2) + (-count * fontHeight / 2 + i * fontHeight));
+				layout[i].setLocation(WatchUi.LAYOUT_HALIGN_CENTER, (height / 2) + (-count * fontHeight / 2 + i * fontHeight));
 			}
 
 			setLayout(layout.slice(0,count));
@@ -70,12 +71,12 @@ class HassIQView extends Ui.View {
 		}
 		*/
 
-		var color = Gfx.COLOR_YELLOW;
+		var color = Graphics.COLOR_YELLOW;
 		if (state.status != 0) {
 			if (state.status == 200) {
-				color = Gfx.COLOR_GREEN;
+				color = Graphics.COLOR_GREEN;
 			} else {
-				color = Gfx.COLOR_RED;
+				color = Graphics.COLOR_RED;
 			}
 		}
 		dc.setColor(color, color);
