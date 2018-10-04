@@ -1,6 +1,6 @@
-using Toybox.Application as App;
+using Toybox.Application;
 
-class HassIQApp extends App.AppBase {
+class HassIQApp extends Application.AppBase {
 	var state = new HassIQState();
 	var view;
 	var delegate;
