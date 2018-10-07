@@ -155,6 +155,9 @@ class HassIQState {
 			log("Received data:"+data);
 
 			var entity = buildEntity(data, entities);
+			if (entity == null) {
+				return;
+			}
 
 			var size = entities.size();
 			for (var i=0; i<size-1; ++i) {
@@ -182,7 +185,7 @@ class HassIQState {
 		if (domain != "script") {
 			data = { "entity_id" => entity[:entity_id] };
 		}
-		
+
 		if (Comm has :makeWebRequest) {
 			Comm.makeWebRequest(api() + "/services/" + domain + "/" + service, data,
 				{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => headers },
@@ -215,11 +218,13 @@ class HassIQState {
 	}
 
 	function updateEntityState(entity, state) {
+		var domain = getEntityDomain(entity);
+
 		if (state == null) {
 			state = entity[:state] != null ? entity[:state] : off;
 		}
 		var drawable = null;
-		if (getEntityDomain(entity).equals("sun")) {
+		if (domain.equals("sun")) {
 			if (state.equals("above_horizon") ) {
 				drawable = new WatchUi.Bitmap({:rezId=>Rez.Drawables.sun});
 			} else {
@@ -235,9 +240,13 @@ class HassIQState {
 
 			var title = entity[:name] ? entity[:name] : entity[:entity_id];
 			var color = Graphics.COLOR_WHITE;
-			if (state.equals(on)) {
+
+			if (domain.equals("sensor")) {
+				title = title + ":" + state;
+			} else if (state.equals(on)) {
 				title = "* " + title;
 			}
+
 			entity[:title] = title;
 			if (entity[:drawable]) {
 				entity[:drawable].setText(title);
@@ -260,6 +269,12 @@ class HassIQState {
 		if (attributes != null) {
 			name = attributes["friendly_name"];
 			hid = attributes["hidden"];
+			if (hid) {
+				var view = attributes["view"];
+				if (view != null && view == true) {
+					hid = false;
+				}
+			}
 		}
 
 		if (hid == true) {
