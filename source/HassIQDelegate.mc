@@ -83,8 +83,13 @@ class HassIQDelegate extends WatchUi.BehaviorDelegate {
 	
 	function callEntityService(entity) {
 		var domain = state.getEntityDomain(entity);
-		var service = null;
+		if (domain.equals("group")) {
+			state.setGroup(entity[:entity_id]);
+			state.update(method(:onStateUpdated));
+			return;
+		}
 
+		var service = null;
 		if (domain.equals("automation")) {
 			service = "trigger";
 		} else if (domain.equals("script")) {
@@ -95,7 +100,7 @@ class HassIQDelegate extends WatchUi.BehaviorDelegate {
 			domain = "homeassistant";
 			service = "toggle";
 		}
-		
+
 		progressBar = new WatchUi.ProgressBar("Triggering", null);
 		WatchUi.pushView(progressBar, new HassIQProgressBarDelegate(self), WatchUi.SLIDE_DOWN);
 
@@ -103,6 +108,10 @@ class HassIQDelegate extends WatchUi.BehaviorDelegate {
 		progressTimer.start(method(:onTimer), 500, false);
 
 		state.callService(domain, service, entity, method(:onServiceCalled));
+	}
+
+	function onStateUpdated(state) {
+		WatchUi.requestUpdate();
 	}
 
 	// Combining the Timer & Service callbacks here let us avoid a CIQ crash that happens when we

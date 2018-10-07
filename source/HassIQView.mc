@@ -18,7 +18,7 @@ class HassIQView extends WatchUi.View {
 	}
 
 	function requestUpdate() {
-		self.state.update(method(:onStateUpdated));
+		state.update(method(:onStateUpdated));
 	}
 
 	function onStateUpdated(state) {
