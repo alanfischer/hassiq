@@ -23,7 +23,7 @@ class HassIQView extends WatchUi.View {
 
 	function onStateUpdated(state) {
 		WatchUi.requestUpdate();
-   	}
+	}
 
 	function onUpdate(dc) {
 		if (state.entities) {
@@ -34,7 +34,7 @@ class HassIQView extends WatchUi.View {
 			var fontHeight = dc.getFontHeight(Graphics.FONT_TINY);
 
 			// Only show as many entities as we have room for
-			for(var i=0; i<size && (count*fontHeight)<height; ++i) {
+			for(var i=0; i<size && (count*fontHeight) < height; ++i) {
 				var entity = state.entities[i];
 				var drawable = entity[:drawable];
 
@@ -66,7 +66,7 @@ class HassIQView extends WatchUi.View {
 		if (state.selected != null) {
 			var drawable = state.selected[:drawable];
 			var x = (dc.getWidth() - drawable.width)/2;
-   			var y = drawable.locY;
+			var y = drawable.locY;
 			dc.drawRectangle(x, y, drawable.width, drawable.height);
 		}
 		*/

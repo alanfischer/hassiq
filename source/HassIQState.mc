@@ -9,6 +9,7 @@ class HassIQState {
 	var entities = null;
 	var selected = null;
 	var host = null;
+	var headers = null;
 	var visibilityGroup = null;
 	var password = null;
 	var code = null;
@@ -16,6 +17,7 @@ class HassIQState {
 
 	static var on = "on";
 	static var off = "off";
+	static var unknown = "unknown";
 
 	function initialize() {
 		setPassword(null);
@@ -314,7 +316,7 @@ class HassIQState {
 		var domain = getEntityDomain(entity);
 
 		if (state == null) {
-			state = entity[:state] != null ? entity[:state] : off;
+			state = entity[:state] != null ? entity[:state] : unknown;
 		}
 		var drawable = null;
 		if (domain.equals("sun")) {
@@ -329,15 +331,19 @@ class HassIQState {
 				state = on;
 			} else if(state.equals(off)) {
 				state = off;
+			} else if(state.equals(unknown)) {
+				state = unknown;
 			}
 
 			var title = entity[:name] ? entity[:name] : entity[:entity_id];
 			var color = Graphics.COLOR_WHITE;
 
-			if (domain.equals("sensor")) {
-				title = title + ":" + state;
+			if (state.length() == 0 || state.equals(off) || state.equals(unknown)) {
+				// Nothing
 			} else if (state.equals(on)) {
 				title = "* " + title;
+			} else {
+				title = title + ":" + state;
 			}
 
 			entity[:title] = title;
@@ -407,8 +413,7 @@ class HassIQState {
 				entities[size] = entity;
 				size++;
 			}
-		}
-		else {
+		} else {
 			var entities_list = data["attributes"]["entity_id"];
 			var entities_size = entities_list.size();
 			entities = new [entities_size];
@@ -443,6 +448,7 @@ class HassIQState {
 				}
 			}
 		}
+
 		return sorted;
 	}
 
