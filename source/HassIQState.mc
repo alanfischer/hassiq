@@ -137,7 +137,7 @@ class HassIQState {
 				{
 					"grant_type" => "authorization_code",
 					"code" => code,
-					"client_id" => "https://www.hass-iq.net" // TODO pass in client_id
+					"client_id" => "https://www.hass-iq.net"
 				}, {
 					:method => Comm.HTTP_REQUEST_METHOD_POST,
 					:headers => { "Content-Type" => Comm.REQUEST_CONTENT_TYPE_URL_ENCODED },
@@ -148,7 +148,7 @@ class HassIQState {
 				{
 					"grant_type" => "authorization_code",
 					"code" => code,
-					"client_id" => "https://www.hass-iq.net" // TODO pass in client_id
+					"client_id" => "https://www.hass-iq.net"
 				}, {
 					:method => Comm.HTTP_REQUEST_METHOD_POST,
 					:headers => { "Content-Type" => Comm.REQUEST_CONTENT_TYPE_URL_ENCODED },
@@ -188,7 +188,7 @@ class HassIQState {
 
 		if (Comm has :makeWebRequest) {
 			Comm.makeWebRequest(api() + "/states/" + visibilityGroup, null,
-				{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => headers },
+				{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => headers },
 				method(:onUpdateReceive) );
 		} else {
 			Comm.makeJsonRequest(api() + "/states/" + visibilityGroup, null,
