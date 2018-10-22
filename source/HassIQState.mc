@@ -9,9 +9,10 @@ class HassIQState {
 	var entities = null;
 	var selected = null;
 	var host = null;
-	var password = null;
 	var visibilityGroup = null;
-	var headers;
+	var password = null;
+	var code = null;
+	var token = null;
 
 	static var on = "on";
 	static var off = "off";
@@ -21,23 +22,24 @@ class HassIQState {
 	}
 
 	function setHost(host) {
-		self.host = host;
+		var length = host.length();
+		if (host.substring(length - 1, length).equals("/")) {
+			self.host = host.substring(0, length - 1);
+		} else {
+			self.host = host;
+		}
 	}
 
 	function setPassword(password) {
 		self.password = password;
-		if (password != null) {
-			headers = {
-				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "x-ha-access" => password
-			};
-		} else {
-			headers = {
-				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON
-			};
-		}
 	}
-	
-	function buildHeaders() {
+
+	function setAuthCode(code) {
+		self.code = code;
+	}
+
+	function setToken(token) {
+		self.token = token;
 	}
 
 	function setGroup(group) {
@@ -87,9 +89,102 @@ class HassIQState {
 	}
 
 	function update(callback) {
-		log("Requesting update");
-
 		self.updateCallback = callback;
+
+		if (password != null) {
+			requestUpdate();
+		} else if (code != null) {
+			requestToken();
+		} else {
+			requestOAuth();
+		}
+
+		return true;
+	}
+
+	function requestOAuth() {
+		Comm.registerForOAuthMessages(method(:onOAuthMessage));
+
+		Comm.makeOAuthRequest(
+			host + "/auth/authorize",
+			{ "redirect_uri" => "https://www.hass-iq.net/auth", "client_id" => "https://www.hass-iq.net", "response_type" => "code" },
+			"https://www.hass-iq.net",
+			Comm.OAUTH_RESULT_TYPE_URL,
+			{ "code" => "code", "error" => "error" }
+		);
+	}
+
+	function onOAuthMessage(message) {
+		if (message.data != null) {
+			System.println("oauth data:" + message.data);
+
+			var code = message.data["code"];
+			var error = message.data["error"];
+
+			setAuthCode(code);
+
+			requestToken();
+		} else {
+			// return an error
+		}
+	}
+
+	function requestToken() {
+		System.println("Requesting token");
+
+		if (Comm has :makeWebRequest) {
+			Comm.makeWebRequest(host + "/auth/token",
+				{
+					"grant_type" => "authorization_code",
+					"code" => code,
+					"client_id" => "https://www.hass-iq.net"
+				}, {
+					:method => Comm.HTTP_REQUEST_METHOD_POST,
+					:headers => { "Content-Type" => Comm.REQUEST_CONTENT_TYPE_URL_ENCODED },
+				},
+				method(:onTokenReceive) );
+		} else {
+			Comm.makeJsonRequest(host + "/auth/token",
+				{
+					"grant_type" => "authorization_code",
+					"code" => code,
+					"client_id" => "https://www.hass-iq.net"
+				}, {
+					:method => Comm.HTTP_REQUEST_METHOD_POST,
+					:headers => { "Content-Type" => Comm.REQUEST_CONTENT_TYPE_URL_ENCODED },
+				},
+				method(:onTokenReceive) );
+		}
+	}
+
+	function onTokenReceive(responseCode, data) {
+		System.println("onTokenReceive:" + responseCode);
+		self.status = responseCode;
+		if (responseCode == 200) {
+			log("Received token:" + data);
+
+			setToken(data["access_token"]);
+			requestUpdate();
+		}
+	}
+
+	function requestUpdate() {
+		System.println("Requesting update");
+
+		if (password != null) {
+			headers = {
+				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "x-ha-access" => password
+			};
+		} else if (token != null) {
+			// TODO: This doesn't work yet, since I believe CIQ doesn't properly send Authorization as a header when doing GET requests
+			headers = {
+				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Authorization" => "Bearer " + token
+			};
+		} else {
+			headers = {
+				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON
+			};
+		}
 
 		if (Comm has :makeWebRequest) {
 			Comm.makeWebRequest(api() + "/states/" + visibilityGroup, null,
@@ -100,14 +195,12 @@ class HassIQState {
 				{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => headers },
 				method(:onUpdateReceive) );
 		}
-		
-		return true;
 	}
 
 	function onUpdateReceive(responseCode, data) {
 		self.status = responseCode;
 		if (responseCode == 200) {
-			log("Received data:"+data);
+			log("Received data:" + data);
 
 			var selected_id = self.selected != null ? self.selected[:entity_id] : null;
 			self.selected = null;
@@ -138,7 +231,7 @@ class HassIQState {
 
 	function singleUpdate(entity) {
 		log("Fetching:"+entity[:entity_id]);
-		
+
 		if (Comm has :makeWebRequest) {
 			Comm.makeWebRequest(api() + "/states/" + entity[:entity_id], null,
 				{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => headers },
