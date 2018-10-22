@@ -80,7 +80,7 @@ class HassIQDelegate extends WatchUi.BehaviorDelegate {
 			}
 		}
 	}
-	
+
 	function callEntityService(entity) {
 		var domain = state.getEntityDomain(entity);
 		if (domain.equals("group")) {
