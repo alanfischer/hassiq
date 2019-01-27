@@ -46,9 +46,8 @@ class HassIQState {
 	}
 
 	function setLlat(llat) {
-		System.println("Setting LLAT");
 		self.llat = llat;
-		System.println("LLAT = " + llat);
+	}
 
 	function setGroup(group) {
 		self.visibilityGroup = group;
