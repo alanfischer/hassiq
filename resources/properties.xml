@@ -3,12 +3,14 @@
         <property id="host" type="string">http://hassbian.local:8123</property>
         <property id="password" type="string"></property>
         <property id="group" type="string">group.default_view</property>
+        <property id="llat" type="string"></property>
     </properties>
 
     <strings>
        <string id="host_title">Host</string>
        <string id="password_title">Password</string>
        <string id="group_title">Visible Group</string>
+       <string id="llat_title">Long-Lived Access Token</string>
     </strings>
 
     <settings>
@@ -21,5 +23,7 @@
         <setting propertyKey="@Properties.group" title="@Strings.group_title">
             <settingConfig type="alphaNumeric" />
         </setting>
+        <setting propertyKey="@Properties.llat" title="@Strings.llat_title">
+        	<settingConfig type="alphaNumeric"></settingConfig></setting>
     </settings>
 </resources>
