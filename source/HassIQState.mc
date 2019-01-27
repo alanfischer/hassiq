@@ -14,6 +14,7 @@ class HassIQState {
 	var password = null;
 	var code = null;
 	var token = null;
+	var llat = null;
 
 	static var on = "on";
 	static var off = "off";
@@ -43,6 +44,11 @@ class HassIQState {
 	function setToken(token) {
 		self.token = token;
 	}
+
+	function setLlat(llat) {
+		System.println("Setting LLAT");
+		self.llat = llat;
+		System.println("LLAT = " + llat);
 
 	function setGroup(group) {
 		self.visibilityGroup = group;
@@ -173,12 +179,15 @@ class HassIQState {
 	function requestUpdate() {
 		System.println("Requesting update");
 
-		if (password != null) {
+		if (llat != null) {
+			headers = {
+				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Authorization" => "Bearer " + llat
+			};
+		} else if (password != null) {
 			headers = {
 				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "x-ha-access" => password
 			};
 		} else if (token != null) {
-			// TODO: This doesn't work yet, since I believe CIQ doesn't properly send Authorization as a header when doing GET requests
 			headers = {
 				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Authorization" => "Bearer " + token
 			};
