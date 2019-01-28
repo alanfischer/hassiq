@@ -41,10 +41,12 @@ class HassIQApp extends Application.AppBase {
 		var host = getProperty("host");
 		var password = getProperty("password");
 		var group = getProperty("group");
+		var llat = getProperty("llat");
 
 		state.setHost(host);
 		state.setPassword(password);
 		state.setGroup(group);
+		state.setLlat(llat);
 
 		if (view != null) {
 			view.requestUpdate();
