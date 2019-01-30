@@ -31,7 +31,13 @@ class HassIQView extends WatchUi.View {
 			var layout = new [size];
 			var count = 0;
 			var height = dc.getHeight();
-			var fontHeight = dc.getFontHeight(Graphics.FONT_TINY);
+			var fontHeight = null;
+			
+			if (state.textsize == 0) {
+			    fontHeight = dc.getFontHeight(Graphics.FONT_XTINY);
+			} else {
+			    fontHeight = dc.getFontHeight(Graphics.FONT_TINY);
+			}
 
 			// Only show as many entities as we have room for
 			for(var i=0; i<size && (count*fontHeight) < height; ++i) {
