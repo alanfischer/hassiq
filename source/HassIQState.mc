@@ -15,6 +15,7 @@ class HassIQState {
 	var code = null;
 	var token = null;
 	var llat = null;
+	var textsize = null;
 
 	static var on = "on";
 	static var off = "off";
@@ -49,6 +50,10 @@ class HassIQState {
 		self.llat = llat;
 	}
 
+	function setTextsize(textsize) {
+		self.textsize = textsize;
+	}
+	
 	function setGroup(group) {
 		self.visibilityGroup = group;
 	}
@@ -345,6 +350,13 @@ class HassIQState {
 
 			var title = entity[:name] ? entity[:name] : entity[:entity_id];
 			var color = Graphics.COLOR_WHITE;
+			var font = null;
+			
+			if (textsize == 0) {
+			    font = Graphics.FONT_XTINY;
+			} else {
+			    font = Graphics.FONT_TINY;
+			}
 
 			if (state.length() == 0 || state.equals(off) || state.equals(unknown)) {
 				// Nothing
@@ -358,8 +370,9 @@ class HassIQState {
 			if (entity[:drawable]) {
 				entity[:drawable].setText(title);
 				entity[:drawable].setColor(color);
+				entity[:drawable].setFont(font);
 			} else {
-				drawable = new WatchUi.Text({:text=>title, :font=>Graphics.FONT_TINY, :locX=>WatchUi.LAYOUT_HALIGN_CENTER, :locY=>0, :color=>color});
+				drawable = new WatchUi.Text({:text=>title, :font=>textsize, :locX=>WatchUi.LAYOUT_HALIGN_CENTER, :locY=>0, :color=>color});
 				entity[:drawable] = drawable;
 			}
 		}

@@ -4,6 +4,7 @@
         <property id="password" type="string"></property>
         <property id="group" type="string">group.default_view</property>
         <property id="llat" type="string"></property>
+        <property id="textsize" type="number">1</property>
     </properties>
 
     <strings>
@@ -11,6 +12,9 @@
        <string id="password_title">Password</string>
        <string id="group_title">Visible Group</string>
        <string id="llat_title">Long-Lived Access Token</string>
+       <string id="textsize_title">Text Size</string>
+       <string id="textsize_normal">Normal</string>
+       <string id="textsize_small">Small</string>
     </strings>
 
     <settings>
@@ -25,5 +29,10 @@
         </setting>
         <setting propertyKey="@Properties.llat" title="@Strings.llat_title">
         	<settingConfig type="alphaNumeric"></settingConfig></setting>
+        <setting propertyKey="@Properties.textsize" title="@Strings.textsize_title">
+        	<settingConfig type="list">
+			        <listEntry value="1">@Strings.textsize_normal</listEntry>
+			        <listEntry value="0">@Strings.textsize_small</listEntry>
+			</settingConfig></setting>
     </settings>
 </resources>
