@@ -11,6 +11,7 @@ class HassIQApp extends Application.AppBase {
 
 	function onStart(state) {
 		self.state.load(getProperty("state"));
+		self.state.setAuthCode(getProperty("code"));
 
 		var selected = getProperty("selected");
 		if (selected != null) {
@@ -27,6 +28,8 @@ class HassIQApp extends Application.AppBase {
 
 	function onStop(state) {
 		setProperty("state", self.state.save());
+		setProperty("code", self.state.getAuthCode());
+		setProperty("llat", self.state.getLlat());
 
 		var selected = null;
 		if (self.state.selected != null) {
@@ -39,13 +42,11 @@ class HassIQApp extends Application.AppBase {
 
 	function onSettingsChanged() {
 		var host = getProperty("host");
-		var password = getProperty("password");
 		var group = getProperty("group");
 		var llat = getProperty("llat");
 		var textsize = getProperty("textsize");
 
 		state.setHost(host);
-		state.setPassword(password);
 		state.setGroup(group);
 		state.setLlat(llat);
 		state.setTextsize(textsize);

@@ -11,18 +11,15 @@ class HassIQState {
 	var host = null;
 	var headers = null;
 	var visibilityGroup = null;
-	var password = null;
 	var code = null;
-	var token = null;
 	var llat = null;
-	var textsize = null;
+	var textsize = 0;
 
 	static var on = "on";
 	static var off = "off";
 	static var unknown = "unknown";
 
 	function initialize() {
-		setPassword(null);
 	}
 
 	function setHost(host) {
@@ -34,20 +31,20 @@ class HassIQState {
 		}
 	}
 
-	function setPassword(password) {
-		self.password = password;
-	}
-
 	function setAuthCode(code) {
 		self.code = code;
 	}
 
-	function setToken(token) {
-		self.token = token;
+	function getAuthCode() {
+		return self.code;
 	}
 
 	function setLlat(llat) {
 		self.llat = llat;
+	}
+
+	function getLlat() {
+		return self.llat;
 	}
 
 	function setTextsize(textsize) {
@@ -103,7 +100,7 @@ class HassIQState {
 	function update(callback) {
 		self.updateCallback = callback;
 
-		if (password != null) {
+		if (llat != null) {
 			requestUpdate();
 		} else if (code != null) {
 			requestToken();
@@ -171,12 +168,17 @@ class HassIQState {
 
 	function onTokenReceive(responseCode, data) {
 		System.println("onTokenReceive:" + responseCode);
+
 		self.status = responseCode;
+
 		if (responseCode == 200) {
 			log("Received token:" + data);
 
-			setToken(data["access_token"]);
+			setLlat(data["access_token"]);
+
 			requestUpdate();
+		} else {
+			requestOAuth();
 		}
 	}
 
@@ -186,14 +188,6 @@ class HassIQState {
 		if (llat != null) {
 			headers = {
 				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Authorization" => "Bearer " + llat
-			};
-		} else if (password != null) {
-			headers = {
-				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "x-ha-access" => password
-			};
-		} else if (token != null) {
-			headers = {
-				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Authorization" => "Bearer " + token
 			};
 		} else {
 			headers = {
@@ -237,6 +231,8 @@ class HassIQState {
 			}
 		} else {
 			log("Failed to load\nError: " + responseCode.toString());
+
+			requestOAuth();
 		}
 
 		if (self.updateCallback != null) {
