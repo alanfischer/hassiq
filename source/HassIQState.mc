@@ -11,9 +11,10 @@ class HassIQState {
 	var host = null;
 	var headers = null;
 	var visibilityGroup = null;
-	var code = null;
+	var refreshToken = null;
 	var llat = null;
 	var textsize = 0;
+	var code = null;
 
 	static var on = "on";
 	static var off = "off";
@@ -31,12 +32,12 @@ class HassIQState {
 		}
 	}
 
-	function setAuthCode(code) {
-		self.code = code;
+	function setRefreshToken(token) {
+		self.refreshToken = token;
 	}
 
-	function getAuthCode() {
-		return self.code;
+	function getRefreshToken() {
+		return self.refreshToken;
 	}
 
 	function setLlat(llat) {
@@ -130,39 +131,43 @@ class HassIQState {
 			var code = message.data["code"];
 			var error = message.data["error"];
 
-			setAuthCode(code);
+			self.code = code;
 
 			requestToken();
 		} else {
-			// return an error
+			log("Failed to oauth\nError: " + message);
 		}
 	}
 
 	function requestToken() {
 		System.println("Requesting token");
 
-		if (Comm has :makeWebRequest) {
-			Comm.makeWebRequest(host + "/auth/token",
-				{
-					"grant_type" => "authorization_code",
-					"code" => code,
-					"client_id" => "https://www.hass-iq.net"
-				}, {
-					:method => Comm.HTTP_REQUEST_METHOD_POST,
-					:headers => { "Content-Type" => Comm.REQUEST_CONTENT_TYPE_URL_ENCODED },
-				},
-				method(:onTokenReceive) );
+		var data = {};
+		if (code != null) {
+			data = {
+				"grant_type" => "authorization_code",
+				"code" => code,
+				"client_id" => "https://www.hass-iq.net"
+			};
+			
+			code = null;
 		} else {
-			Comm.makeJsonRequest(host + "/auth/token",
-				{
-					"grant_type" => "authorization_code",
-					"code" => code,
-					"client_id" => "https://www.hass-iq.net"
-				}, {
-					:method => Comm.HTTP_REQUEST_METHOD_POST,
-					:headers => { "Content-Type" => Comm.REQUEST_CONTENT_TYPE_URL_ENCODED },
-				},
-				method(:onTokenReceive) );
+			data = {
+				"grant_type" => "refresh_token",
+				"refresh_token" => refreshToken,
+				"client_id" => "https://www.hass-iq.net"
+			};
+		}
+		
+		var options = {
+			:method => Comm.HTTP_REQUEST_METHOD_POST,
+			:headers => { "Content-Type" => Comm.REQUEST_CONTENT_TYPE_URL_ENCODED },
+		};
+
+		if (Comm has :makeWebRequest) {
+			Comm.makeWebRequest(host + "/auth/token", data, options, method(:onTokenReceive) );
+		} else {
+			Comm.makeJsonRequest(host + "/auth/token", data, options, method(:onTokenReceive) );
 		}
 	}
 
@@ -176,14 +181,23 @@ class HassIQState {
 
 			setLlat(data["access_token"]);
 
+			var refreshToken = data["refresh_token"];
+			if (refreshToken != null) {
+				setRefreshToken(refreshToken);
+			}
+
 			requestUpdate();
-		} else {
+		} else if (responseCode == 401 || responseCode == 400) {
+			log("Unauthorized");
+
 			requestOAuth();
+		} else {
+			log("Failed to load\nError: " + responseCode.toString());
 		}
 	}
 
 	function requestUpdate() {
-		System.println("Requesting update");
+		System.println("Requesting update: " + llat);
 
 		if (llat != null) {
 			headers = {
@@ -195,14 +209,15 @@ class HassIQState {
 			};
 		}
 
+		var options = {
+			:method => Comm.HTTP_REQUEST_METHOD_GET,
+			:headers => headers
+		};
+
 		if (Comm has :makeWebRequest) {
-			Comm.makeWebRequest(api() + "/states/" + visibilityGroup, null,
-				{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => headers },
-				method(:onUpdateReceive) );
+			Comm.makeWebRequest(api() + "/states/" + visibilityGroup, null, options, method(:onUpdateReceive) );
 		} else {
-			Comm.makeJsonRequest(api() + "/states/" + visibilityGroup, null,
-				{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => headers },
-				method(:onUpdateReceive) );
+			Comm.makeJsonRequest(api() + "/states/" + visibilityGroup, null, options, method(:onUpdateReceive) );
 		}
 	}
 
@@ -229,10 +244,12 @@ class HassIQState {
 			if (size > 0) {
 				singleUpdate(entities[0]);
 			}
+		} else if (responseCode == 401 || responseCode == 400) {
+			log("Unauthorized");
+
+			requestToken();
 		} else {
 			log("Failed to load\nError: " + responseCode.toString());
-
-			requestOAuth();
 		}
 
 		if (self.updateCallback != null) {
@@ -243,14 +260,15 @@ class HassIQState {
 	function singleUpdate(entity) {
 		log("Fetching:"+entity[:entity_id]);
 
+		var options = {
+			:method => Comm.HTTP_REQUEST_METHOD_GET,
+			:headers => headers
+		};
+
 		if (Comm has :makeWebRequest) {
-			Comm.makeWebRequest(api() + "/states/" + entity[:entity_id], null,
-				{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => headers },
-				method(:onSingleUpdateReceive) );
+			Comm.makeWebRequest(api() + "/states/" + entity[:entity_id], null, options, method(:onSingleUpdateReceive) );
 		} else {
-			Comm.makeJsonRequest(api() + "/states/" + entity[:entity_id], null,
-				{ :method => Comm.HTTP_REQUEST_METHOD_GET, :headers => headers },
-				method(:onSingleUpdateReceive) );
+			Comm.makeJsonRequest(api() + "/states/" + entity[:entity_id], null, options, method(:onSingleUpdateReceive) );
 		}
 	}
 
@@ -290,14 +308,15 @@ class HassIQState {
 			data = { "entity_id" => entity[:entity_id] };
 		}
 
+		var options = {
+			:method => Comm.HTTP_REQUEST_METHOD_POST,
+			:headers => headers
+		};
+
 		if (Comm has :makeWebRequest) {
-			Comm.makeWebRequest(api() + "/services/" + domain + "/" + service, data,
-				{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => headers },
-				method(:onServiceReceive) );
+			Comm.makeWebRequest(api() + "/services/" + domain + "/" + service, data, options, method(:onServiceReceive) );
 		} else {
-			Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service, data,
-				{ :method => Comm.HTTP_REQUEST_METHOD_POST, :headers => headers },
-				method(:onServiceReceive) );
+			Comm.makeJsonRequest(api() + "/services/" + domain + "/" + service, data, options, method(:onServiceReceive) );
 		}
 
 		return true;
