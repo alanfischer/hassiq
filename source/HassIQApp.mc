@@ -10,6 +10,7 @@ class HassIQApp extends Application.AppBase {
 	}
 
 	function onStart(state) {
+		onSettingsChanged();
 		self.state.load(getProperty("state"));
 
 		var selected = getProperty("selected");
@@ -21,8 +22,6 @@ class HassIQApp extends Application.AppBase {
 				}
 			}
 		}
-
-		onSettingsChanged();
 	}
 
 	function onStop(state) {
