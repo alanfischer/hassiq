@@ -363,7 +363,8 @@ class HassIQState {
 			} else if (state.equals(on)) {
 				color = Graphics.COLOR_WHITE;
 			} else {
-				color = Graphics.COLOR_DK_GRAY ;
+				title = title + ": " + state;
+ 				color = Graphics.COLOR_WHITE;
 			}
 
 			entity[:title] = title;
