@@ -374,11 +374,12 @@ class HassIQState {
 			}
 
 			if (state.length() == 0 || state.equals(off) || state.equals(unknown)) {
-				// Nothing
+				color = Graphics.COLOR_DK_GRAY ;
 			} else if (state.equals(on)) {
-				title = "* " + title;
+				color = Graphics.COLOR_WHITE;
 			} else {
-				title = title + ":" + state;
+				title = title + ": " + state;
+ 				color = Graphics.COLOR_WHITE;
 			}
 
 			entity[:title] = title;
