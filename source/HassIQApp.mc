@@ -1,4 +1,5 @@
 using Toybox.Application;
+using Toybox.Time;
 
 class HassIQApp extends Application.AppBase {
 	var state = new HassIQState();
@@ -14,7 +15,10 @@ class HassIQApp extends Application.AppBase {
 		self.state.load(getProperty("state"));
 		self.state.setToken(getProperty("token"));
 		self.state.setRefreshToken(getProperty("refresh_token"));
-		self.state.setExpireTime(getProperty("expire_time"));
+		var expireValue = getProperty("expire_time");
+		if (expireValue != null) {
+			self.state.setExpireTime(new Time.Moment(expireValue));
+		}
 
 		var selected = getProperty("selected");
 		if (selected != null) {
@@ -31,7 +35,10 @@ class HassIQApp extends Application.AppBase {
 		setProperty("state", self.state.save());
 		setProperty("token", self.state.getToken());
 		setProperty("refresh_token", self.state.getRefreshToken());
-		setProperty("expire_time", self.state.getExpireTime());
+		var expireTime = self.state.getExpireTime();
+		if (expireTime != null) {
+			setProperty("expire_time", expireTime.value());
+		}
 
 		var selected = null;
 		if (self.state.selected != null) {

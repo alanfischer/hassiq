@@ -119,7 +119,13 @@ class HassIQState {
 	function update(callback) {
 		self.updateCallback = callback;
 
-		if (llat != null || (token != null && (expireTime == null || expireTime.compare(Time.now()) < 0))) {
+		System.println("llat: " + llat);
+		System.println("token: " + token);
+		if (expireTime != null) {
+			System.println("expireTime: " + expireTime.value());
+		}
+
+		if (llat != null || (token != null && (expireTime == null || expireTime.compare(Time.now()) > 0))) {
 			requestUpdate();
 		} else if (code != null || refreshToken != null) {
 			requestToken();
@@ -290,7 +296,7 @@ class HassIQState {
 	}
 
 	function singleUpdate(entity) {
-		log("Fetching:"+entity[:entity_id]);
+		log("Fetching:" + entity[:entity_id]);
 
 		var options = {
 			:method => Comm.HTTP_REQUEST_METHOD_GET,
