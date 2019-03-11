@@ -11,7 +11,9 @@ class HassIQApp extends Application.AppBase {
 
 	function onStart(state) {
 		self.state.load(getProperty("state"));
+		self.state.setToken(getProperty("token"));
 		self.state.setRefreshToken(getProperty("refresh_token"));
+		self.state.setExpireTime(getProperty("expire_time"));
 
 		var selected = getProperty("selected");
 		if (selected != null) {
@@ -28,8 +30,9 @@ class HassIQApp extends Application.AppBase {
 
 	function onStop(state) {
 		setProperty("state", self.state.save());
+		setProperty("token", self.state.getToken());
 		setProperty("refresh_token", self.state.getRefreshToken());
-		setProperty("llat", self.state.getLlat());
+		setProperty("expire_time", self.state.getExpireTime());
 
 		var selected = null;
 		if (self.state.selected != null) {

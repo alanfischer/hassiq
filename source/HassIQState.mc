@@ -1,6 +1,7 @@
 using Toybox.Communications as Comm;
 using Toybox.Graphics;
 using Toybox.WatchUi;
+using Toybox.Time;
 
 class HassIQState {
 	var serviceCallback = null;
@@ -11,8 +12,10 @@ class HassIQState {
 	var host = null;
 	var headers = null;
 	var visibilityGroup = null;
-	var refreshToken = null;
 	var llat = null;
+	var token = null;
+	var refreshToken = null;
+	var expireTime = null;
 	var textsize = 0;
 	var code = null;
 
@@ -32,6 +35,21 @@ class HassIQState {
 		}
 	}
 
+	function setLlat(llat) {
+		if (llat != null && llat.length() == 0) {
+			llat = null;
+		}
+		self.llat = llat;
+	}
+
+	function setToken(token) {
+		self.token = token;
+	}
+
+	function getToken() {
+		return self.token;
+	}
+
 	function setRefreshToken(token) {
 		self.refreshToken = token;
 	}
@@ -40,12 +58,12 @@ class HassIQState {
 		return self.refreshToken;
 	}
 
-	function setLlat(llat) {
-		self.llat = llat;
+	function setExpireTime(time) {
+		self.expireTime = time;
 	}
 
-	function getLlat() {
-		return self.llat;
+	function getExpireTime() {
+		return self.expireTime;
 	}
 
 	function setTextsize(textsize) {
@@ -101,9 +119,9 @@ class HassIQState {
 	function update(callback) {
 		self.updateCallback = callback;
 
-		if (llat != null) {
+		if (llat != null || (token != null && (expireTime == null || expireTime.compare(Time.now()) < 0))) {
 			requestUpdate();
-		} else if (code != null) {
+		} else if (code != null || refreshToken != null) {
 			requestToken();
 		} else {
 			requestOAuth();
@@ -113,6 +131,8 @@ class HassIQState {
 	}
 
 	function requestOAuth() {
+		System.println("requesting OAuth");
+
 		Comm.registerForOAuthMessages(method(:onOAuthMessage));
 
 		Comm.makeOAuthRequest(
@@ -140,10 +160,10 @@ class HassIQState {
 	}
 
 	function requestToken() {
-		System.println("Requesting token");
-
 		var data = {};
 		if (code != null) {
+			System.println("Requesting token with code");
+
 			data = {
 				"grant_type" => "authorization_code",
 				"code" => code,
@@ -152,6 +172,8 @@ class HassIQState {
 			
 			code = null;
 		} else {
+			System.println("Requesting token with refresh_token");
+
 			data = {
 				"grant_type" => "refresh_token",
 				"refresh_token" => refreshToken,
@@ -179,11 +201,16 @@ class HassIQState {
 		if (responseCode == 200) {
 			log("Received token:" + data);
 
-			setLlat(data["access_token"]);
+			setToken(data["access_token"]);
 
 			var refreshToken = data["refresh_token"];
 			if (refreshToken != null) {
 				setRefreshToken(refreshToken);
+			}
+
+			var expiresIn = data["expires_in"];
+			if (expiresIn != null) {
+			    setExpireTime(Time.now().add(new Time.Duration(expiresIn)));
 			}
 
 			requestUpdate();
@@ -197,15 +224,17 @@ class HassIQState {
 	}
 
 	function requestUpdate() {
-		System.println("Requesting update: " + llat);
-
 		if (llat != null) {
+			System.println("Requesting update with llat");
+
 			headers = {
 				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Authorization" => "Bearer " + llat
 			};
-		} else {
+		} else if (token != null) {
+			System.println("Requesting update with token");
+
 			headers = {
-				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON
+				"Content-Type" => Comm.REQUEST_CONTENT_TYPE_JSON, "Authorization" => "Bearer " + token
 			};
 		}
 
@@ -223,6 +252,7 @@ class HassIQState {
 
 	function onUpdateReceive(responseCode, data) {
 		self.status = responseCode;
+
 		if (responseCode == 200) {
 			log("Received data:" + data);
 
@@ -246,6 +276,8 @@ class HassIQState {
 			}
 		} else if (responseCode == 401 || responseCode == 400) {
 			log("Unauthorized");
+
+			llat = null;
 
 			requestToken();
 		} else {
