@@ -10,6 +10,7 @@ class HassIQApp extends Application.AppBase {
 	}
 
 	function onStart(state) {
+		onSettingsChanged();
 		self.state.load(getProperty("state"));
 		self.state.setToken(getProperty("token"));
 		self.state.setRefreshToken(getProperty("refresh_token"));
@@ -24,8 +25,6 @@ class HassIQApp extends Application.AppBase {
 				}
 			}
 		}
-
-		onSettingsChanged();
 	}
 
 	function onStop(state) {
