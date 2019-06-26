@@ -5,11 +5,16 @@
             <iq:product id="d2bravo"/>
             <iq:product id="d2bravo_titanium"/>
             <iq:product id="d2charlie"/>
+            <iq:product id="d2delta"/>
+            <iq:product id="d2deltapx"/>
+            <iq:product id="d2deltas"/>
             <iq:product id="descentmk1"/>
             <iq:product id="edge1030"/>
             <iq:product id="edge1030bontrager"/>
             <iq:product id="edge520plus"/>
+            <iq:product id="edge530"/>
             <iq:product id="edge820"/>
+            <iq:product id="edge830"/>
             <iq:product id="edge_1000"/>
             <iq:product id="edge_520"/>
             <iq:product id="edgeexplore"/>
@@ -25,17 +30,28 @@
             <iq:product id="fenixchronos"/>
             <iq:product id="fr230"/>
             <iq:product id="fr235"/>
+            <iq:product id="fr245"/>
+            <iq:product id="fr245m"/>
             <iq:product id="fr630"/>
             <iq:product id="fr645"/>
             <iq:product id="fr645m"/>
             <iq:product id="fr735xt"/>
             <iq:product id="fr920xt"/>
             <iq:product id="fr935"/>
+            <iq:product id="fr945"/>
+            <iq:product id="gpsmap66"/>
+            <iq:product id="marqathlete"/>
+            <iq:product id="marqaviator"/>
+            <iq:product id="marqcaptain"/>
+            <iq:product id="marqdriver"/>
+            <iq:product id="marqexpedition"/>
             <iq:product id="oregon7xx"/>
             <iq:product id="rino7xx"/>
             <iq:product id="vivoactive"/>
             <iq:product id="vivoactive3"/>
+            <iq:product id="vivoactive3d"/>
             <iq:product id="vivoactive3m"/>
+            <iq:product id="vivoactive3mlte"/>
             <iq:product id="vivoactive_hr"/>
         </iq:products>
         <iq:permissions>
