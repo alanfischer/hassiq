@@ -27,6 +27,11 @@
             <iq:product id="fenix5splus"/>
             <iq:product id="fenix5x"/>
             <iq:product id="fenix5xplus"/>
+            <iq:product id="fenix6"/>
+            <iq:product id="fenix6pro"/>
+            <iq:product id="fenix6s"/>
+            <iq:product id="fenix6spro"/>
+            <iq:product id="fenix6xpro"/>
             <iq:product id="fenixchronos"/>
             <iq:product id="fr230"/>
             <iq:product id="fr235"/>
@@ -40,18 +45,26 @@
             <iq:product id="fr935"/>
             <iq:product id="fr945"/>
             <iq:product id="gpsmap66"/>
+            <iq:product id="gpsmap86"/>
+            <iq:product id="legacyherocaptainmarvel"/>
+            <iq:product id="legacyherofirstavenger"/>
+            <iq:product id="marqadventurer"/>
             <iq:product id="marqathlete"/>
             <iq:product id="marqaviator"/>
             <iq:product id="marqcaptain"/>
+            <iq:product id="marqcommander"/>
             <iq:product id="marqdriver"/>
             <iq:product id="marqexpedition"/>
             <iq:product id="oregon7xx"/>
             <iq:product id="rino7xx"/>
+            <iq:product id="venu"/>
             <iq:product id="vivoactive"/>
             <iq:product id="vivoactive3"/>
             <iq:product id="vivoactive3d"/>
             <iq:product id="vivoactive3m"/>
             <iq:product id="vivoactive3mlte"/>
+            <iq:product id="vivoactive4"/>
+            <iq:product id="vivoactive4s"/>
             <iq:product id="vivoactive_hr"/>
         </iq:products>
         <iq:permissions>
