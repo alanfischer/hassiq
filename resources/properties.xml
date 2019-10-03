@@ -17,7 +17,7 @@
 
     <settings>
         <setting propertyKey="@Properties.host" title="@Strings.host_title">
-            <settingConfig type="alphaNumeric" />
+            <settingConfig type="url" />
         </setting>
         <setting propertyKey="@Properties.group" title="@Strings.group_title">
             <settingConfig type="alphaNumeric" />
