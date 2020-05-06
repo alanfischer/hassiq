@@ -2,6 +2,7 @@
     <iq:application entry="HassIQApp" id="F2D27A806084465C88F84C2B87ABD703" launcherIcon="@Drawables.LauncherIcon" minSdkVersion="1.2.0" name="@Strings.AppName" type="widget">
         <iq:products>
             <iq:product id="approachs60"/>
+            <iq:product id="approachs62"/>
             <iq:product id="d2bravo"/>
             <iq:product id="d2bravo_titanium"/>
             <iq:product id="d2charlie"/>
@@ -48,6 +49,8 @@
             <iq:product id="gpsmap86"/>
             <iq:product id="legacyherocaptainmarvel"/>
             <iq:product id="legacyherofirstavenger"/>
+            <iq:product id="legacysagadarthvader"/>
+            <iq:product id="legacysagarey"/>
             <iq:product id="marqadventurer"/>
             <iq:product id="marqathlete"/>
             <iq:product id="marqaviator"/>
