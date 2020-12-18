@@ -82,23 +82,31 @@ class HassIQDelegate extends WatchUi.BehaviorDelegate {
 	}
 
 	function callEntityService(entity) {
-		var domain = state.getEntityDomain(entity);
-		if (domain.equals("group")) {
-			state.setGroup(entity[:entity_id]);
-			state.update(method(:onStateUpdated));
-			return;
-		}
+		// var domain = state.getEntityDomain(entity);
+		// if (domain.equals("group")) {
+		// 	state.setGroup(entity[:entity_id]);
+		// 	state.update(method(:onStateUpdated));
+		// 	return;
+		// }
 
 		var service = null;
-		if (domain.equals("automation")) {
-			service = "trigger";
-		} else if (domain.equals("script")) {
-			service = state.getEntityId(entity);			
-		} else if (domain.equals("scene")) {
-			service = "turn_on";
-		} else {
-			domain = "homeassistant";
-			service = "toggle";
+		switch (domain) {
+			case "automation":
+				service = "trigger";
+				break;
+			case "script":
+			    service = state.getEntityId(entity);
+				break;
+			case "scene":
+			    service = "turn_on";
+				break;
+			case "group":
+			    onGroupToggle(state);
+				return;
+			default:
+			  	domain = "homeassistant";
+				service = "toggle";
+				break;
 		}
 
 		progressBar = new WatchUi.ProgressBar("Triggering", null);
@@ -108,6 +116,21 @@ class HassIQDelegate extends WatchUi.BehaviorDelegate {
 		progressTimer.start(method(:onTimer), 500, false);
 
 		state.callService(domain, service, entity, method(:onServiceCalled));
+	}
+
+	function onGroupToggle(state) {
+		var entities = state.entities;
+
+		progressBar = new WatchUi.ProgressBar("Triggering", null);
+		WatchUi.pushView(progressBar, new HassIQProgressBarDelegate(self), WatchUi.SLIDE_DOWN);
+
+		progressTimer = new Timer.Timer();
+		progressTimer.start(method(:onTimer), 500, false);
+		
+		var size = (state.entities != null ? state.entities.size() : 0);
+		for(var idx = 0; idx < size; ++idx ) {
+			state.callService(domain, "toggle", entities[idx], method(:onServiceCalled));
+		}		
 	}
 
 	function onStateUpdated(state) {
