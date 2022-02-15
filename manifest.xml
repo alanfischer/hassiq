@@ -25,6 +25,7 @@
             <iq:product id="edgeexplore"/>
             <iq:product id="enduro"/>
             <iq:product id="epix"/>
+            <iq:product id="epix2"/>
             <iq:product id="fenix3"/>
             <iq:product id="fenix3_hr"/>
             <iq:product id="fenix5"/>
@@ -74,6 +75,7 @@
             <iq:product id="venu"/>
             <iq:product id="venu2"/>
             <iq:product id="venu2s"/>
+            <iq:product id="venu2plus"/>
             <iq:product id="venud"/>
             <iq:product id="venusq"/>
             <iq:product id="venusqm"/>
