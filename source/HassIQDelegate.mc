@@ -96,6 +96,8 @@ class HassIQDelegate extends WatchUi.BehaviorDelegate {
 			service = state.getEntityId(entity);			
 		} else if (domain.equals("scene")) {
 			service = "turn_on";
+		} else if (domain.equals("button")) {
+			service = "press";
 		} else {
 			domain = "homeassistant";
 			service = "toggle";
